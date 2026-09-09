@@ -23,9 +23,6 @@ Claude Code의 `/insights` 사용 분석 리포트를 한국어로 번역해 보
 리포트 파일은 `html/` 폴더에 `YYYYMMDD-YYYYMMDD.html` 형식(데이터 기간의 시작일-종료일)으로
 보관합니다. 렌더링된 페이지에서 타임존 선택, 프롬프트 복사 버튼, 목차 앵커가 동작합니다.
 
-> GitHub Pages 링크는 저장소 Settings → Pages 에서 `main` 브랜치(`/` 루트)를 소스로
-> 활성화해야 동작합니다.
-
 ## 생성 방법
 
 `/insights`는 기간 지정 옵션이 없어 전체 트랜스크립트를 분석합니다. `/insights-korean`
@@ -36,6 +33,3 @@ Claude Code의 `/insights` 사용 분석 리포트를 한국어로 번역해 보
 3. `claude -p "/insights"`를 헤드리스로 실행한다
 4. 생성된 리포트를 번역한다 — HTML 구조·CSS·JS·차트 수치는 원본 유지, 텍스트만 한국어화
 5. 요소 개수(`bar-fill`, `chart-title`, 카드류)를 원본과 대조해 검증한다
-
-각 리포트의 원본(영어)은 `~/.claude/usage-data/`에 남아 있으며 이 저장소에는 포함하지
-않습니다.
