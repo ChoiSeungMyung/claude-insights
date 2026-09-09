@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>Claude Code 사용 인사이트</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; color: #334155; line-height: 1.65; padding: 48px 24px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { font-size: 32px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    h2 { font-size: 20px; font-weight: 600; color: #0f172a; margin-top: 48px; margin-bottom: 16px; }
+    .subtitle { color: #64748b; font-size: 15px; margin-bottom: 32px; }
+    .nav-toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 32px 0; padding: 16px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
+    .nav-toc a { font-size: 12px; color: #64748b; text-decoration: none; padding: 6px 12px; border-radius: 6px; background: #f1f5f9; transition: all 0.15s; }
+    .nav-toc a:hover { background: #e2e8f0; color: #334155; }
+    .stats-row { display: flex; gap: 24px; margin-bottom: 40px; padding: 20px 0; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #0f172a; }
+    .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; }
+    .at-a-glance { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #f59e0b; border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; }
+    .glance-title { font-size: 16px; font-weight: 700; color: #92400e; margin-bottom: 16px; }
+    .glance-sections { display: flex; flex-direction: column; gap: 12px; }
+    .glance-section { font-size: 14px; color: #78350f; line-height: 1.6; }
+    .glance-section strong { color: #92400e; }
+    .see-more { color: #b45309; text-decoration: none; font-size: 13px; white-space: nowrap; }
+    .see-more:hover { text-decoration: underline; }
+    .project-areas { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+    .project-area { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; }
+    .area-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .area-name { font-weight: 600; font-size: 15px; color: #0f172a; }
+    .area-count { font-size: 12px; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; }
+    .area-desc { font-size: 14px; color: #475569; line-height: 1.5; }
+    .narrative { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+    .narrative p { margin-bottom: 12px; font-size: 14px; color: #475569; line-height: 1.7; }
+    .key-insight { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; margin-top: 12px; font-size: 14px; color: #166534; }
+    .section-intro { font-size: 14px; color: #64748b; margin-bottom: 16px; }
+    .big-wins { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+    .big-win { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; }
+    .big-win-title { font-weight: 600; font-size: 15px; color: #166534; margin-bottom: 8px; }
+    .big-win-desc { font-size: 14px; color: #15803d; line-height: 1.5; }
+    .friction-categories { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+    .friction-category { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 16px; }
+    .friction-title { font-weight: 600; font-size: 15px; color: #991b1b; margin-bottom: 6px; }
+    .friction-desc { font-size: 13px; color: #7f1d1d; margin-bottom: 10px; }
+    .friction-examples { margin: 0 0 0 20px; font-size: 13px; color: #334155; }
+    .friction-examples li { margin-bottom: 4px; }
+    .claude-md-section { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+    .claude-md-section h3 { font-size: 14px; font-weight: 600; color: #1e40af; margin: 0 0 12px 0; }
+    .claude-md-actions { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #dbeafe; }
+    .copy-all-btn { background: #2563eb; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+    .copy-all-btn:hover { background: #1d4ed8; }
+    .copy-all-btn.copied { background: #16a34a; }
+    .claude-md-item { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; padding: 10px 0; border-bottom: 1px solid #dbeafe; }
+    .claude-md-item:last-child { border-bottom: none; }
+    .cmd-checkbox { margin-top: 2px; }
+    .cmd-code { background: white; padding: 8px 12px; border-radius: 4px; font-size: 12px; color: #1e40af; border: 1px solid #bfdbfe; font-family: monospace; display: block; white-space: pre-wrap; word-break: break-word; flex: 1; }
+    .cmd-why { font-size: 12px; color: #64748b; width: 100%; padding-left: 24px; margin-top: 4px; }
+    .features-section, .patterns-section { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+    .feature-card { background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 16px; }
+    .pattern-card { background: #f0f9ff; border: 1px solid #7dd3fc; border-radius: 8px; padding: 16px; }
+    .feature-title, .pattern-title { font-weight: 600; font-size: 15px; color: #0f172a; margin-bottom: 6px; }
+    .feature-oneliner { font-size: 14px; color: #475569; margin-bottom: 8px; }
+    .pattern-summary { font-size: 14px; color: #475569; margin-bottom: 8px; }
+    .feature-why, .pattern-detail { font-size: 13px; color: #334155; line-height: 1.5; }
+    .feature-examples { margin-top: 12px; }
+    .feature-example { padding: 8px 0; border-top: 1px solid #d1fae5; }
+    .feature-example:first-child { border-top: none; }
+    .example-code-row { display: flex; align-items: flex-start; gap: 8px; }
+    .example-code { flex: 1; background: #f1f5f9; padding: 8px 12px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #334155; overflow-x: auto; white-space: pre-wrap; }
+    .copyable-prompt-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+    .copyable-prompt-row { display: flex; align-items: flex-start; gap: 8px; }
+    .copyable-prompt { flex: 1; background: #f8fafc; padding: 10px 12px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #334155; border: 1px solid #e2e8f0; white-space: pre-wrap; line-height: 1.5; }
+    .feature-code { background: #f8fafc; padding: 12px; border-radius: 6px; margin-top: 12px; border: 1px solid #e2e8f0; display: flex; align-items: flex-start; gap: 8px; }
+    .feature-code code { flex: 1; font-family: monospace; font-size: 12px; color: #334155; white-space: pre-wrap; }
+    .pattern-prompt { background: #f8fafc; padding: 12px; border-radius: 6px; margin-top: 12px; border: 1px solid #e2e8f0; }
+    .pattern-prompt code { font-family: monospace; font-size: 12px; color: #334155; display: block; white-space: pre-wrap; margin-bottom: 8px; }
+    .prompt-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
+    .copy-btn { background: #e2e8f0; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; color: #475569; flex-shrink: 0; }
+    .copy-btn:hover { background: #cbd5e1; }
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0; }
+    .chart-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; }
+    .chart-title { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 12px; }
+    .bar-row { display: flex; align-items: center; margin-bottom: 6px; }
+    .bar-label { width: 120px; font-size: 11px; color: #475569; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { flex: 1; height: 6px; background: #f1f5f9; border-radius: 3px; margin: 0 8px; }
+    .bar-fill { height: 100%; border-radius: 3px; }
+    .bar-value { width: 28px; font-size: 11px; font-weight: 500; color: #64748b; text-align: right; }
+    .horizon-section { display: flex; flex-direction: column; gap: 16px; }
+    .horizon-card { background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%); border: 1px solid #c4b5fd; border-radius: 8px; padding: 16px; }
+    .horizon-title { font-weight: 600; font-size: 15px; color: #5b21b6; margin-bottom: 8px; }
+    .horizon-possible { font-size: 14px; color: #334155; margin-bottom: 10px; line-height: 1.5; }
+    .horizon-tip { font-size: 13px; color: #6b21a8; background: rgba(255,255,255,0.6); padding: 8px 12px; border-radius: 4px; }
+    .fun-ending { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #fbbf24; border-radius: 12px; padding: 24px; margin-top: 40px; text-align: center; }
+    .fun-headline { font-size: 18px; font-weight: 600; color: #78350f; margin-bottom: 8px; }
+    .fun-detail { font-size: 14px; color: #92400e; }
+    @media (max-width: 640px) { .charts-row { grid-template-columns: 1fr; } .stats-row { justify-content: center; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Claude Code 사용 인사이트</h1>
+    <p class="subtitle">134개 세션(전체 189개)에서 1,099개 메시지 | 2026-03-16 ~ 2026-04-09</p>
+
+    <div class="at-a-glance">
+      <div class="glance-title">한눈에 보기</div>
+      <div class="glance-sections">
+        <div class="glance-section"><strong>잘 되고 있는 것:</strong> 브랜치 생성부터 리뷰 코멘트 처리까지 이어지는 인상적인 엔드투엔드 PR 워크플로우를 구축하여 여러 Android 프로젝트에서 일관되게 배포하고 있습니다. refreshToken 레이스 컨디션을 SDK 릴리스까지 이끈 것처럼 어려운 디버깅 세션도 능숙하게 진행하며, Claude의 실수를 빠르게 잡아내는 강력한 아키텍처 가드레일을 유지하고 있습니다. <a href="#section-wins" class="see-more">인상적인 성과 &rarr;</a></div>
+        <div class="glance-section"><strong>방해가 되는 것:</strong> Claude 측면에서는 과도하게 복잡한 솔루션을 먼저 시도하거나 첫 시도에서 근본 원인을 잘못 진단하여 여러 번의 수정 라운드가 필요합니다 (ExoPlayer 상태 관리, Compose API 호환성, git 브랜칭 등). 사용자 측면에서는 Claude가 세션마다 같은 아키텍처 규칙(domain 레이어 순수성, 브랜칭 컨벤션)을 계속 위반하는데, 이는 세션 시작 시 참조할 수 있는 곳에 제약 조건이 기록되어 있지 않기 때문입니다. <a href="#section-friction" class="see-more">문제 발생 지점 &rarr;</a></div>
+        <div class="glance-section"><strong>빠르게 개선할 수 있는 것:</strong> 아키텍처 규칙(domain 레이어 제약, repository 패턴, 브랜칭 컨벤션)을 문서화한 CLAUDE.md 파일을 생성하면 Claude가 같은 위반을 반복하지 않습니다. 또한 커밋 전 빌드 체크를 자동 실행하는 훅을 설정하면 import 누락이나 잘못된 브랜치 커밋 같은 문제를 사전에 방지할 수 있습니다. <a href="#section-features" class="see-more">시도할 기능 &rarr;</a></div>
+        <div class="glance-section"><strong>향후 가능한 워크플로우:</strong> 모델 성능이 향상되면 PR 리뷰 해결 루프 전체(리뷰 모니터링, 수정 적용, 빌드, 푸시)를 각 단계마다 개입 없이 위임할 수 있습니다. 더 나아가 단일 프롬프트로 멀티 파일 변경, 빌드 검증, PR 생성을 가드레일과 함께 처리하는 피처 브랜치 워크플로우도 가능합니다. <a href="#section-horizon" class="see-more">미래 전망 &rarr;</a></div>
+      </div>
+    </div>
+
+    <nav class="nav-toc">
+      <a href="#section-work">작업 영역</a>
+      <a href="#section-usage">사용 패턴</a>
+      <a href="#section-wins">인상적인 성과</a>
+      <a href="#section-friction">문제 발생 지점</a>
+      <a href="#section-features">시도할 기능</a>
+      <a href="#section-patterns">새로운 사용법</a>
+      <a href="#section-horizon">미래 전망</a>
+    </nav>
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-value">1,099</div><div class="stat-label">메시지</div></div>
+      <div class="stat"><div class="stat-value">+38,114/-3,954</div><div class="stat-label">라인</div></div>
+      <div class="stat"><div class="stat-value">661</div><div class="stat-label">파일</div></div>
+      <div class="stat"><div class="stat-value">15</div><div class="stat-label">활동일</div></div>
+      <div class="stat"><div class="stat-value">73.3</div><div class="stat-label">일평균 메시지</div></div>
+    </div>
+
+    <h2 id="section-work">작업 영역</h2>
+    <div class="project-areas">
+      <div class="project-area">
+        <div class="area-header">
+          <span class="area-name">Android 메시징 앱 (Element/Matrix Fork)</span>
+          <span class="area-count">~35 세션</span>
+        </div>
+        <div class="area-desc">Matrix 기반 Android 메시징 클라이언트에 대한 광범위한 작업. UI 수정(사용자 ID 대신 방 이름 표시, 알림 배지, 타이핑 인디케이터, 미디어 갤러리), 기능 변경(UI 요소 숨김, 알림 설정 간소화, 첨부 옵션 제거), 버그 수정(recomposition 버그, 파일 공유 크래시, 통화 화면 표시). Claude Code는 멀티 파일 Kotlin/Compose 편집, 디바이스 빌드/배포, 코드 리뷰 처리를 포함한 전체 PR 워크플로우에 활발히 사용됨.</div>
+      </div>
+      <div class="project-area">
+        <div class="area-header">
+          <span class="area-name">Android 오버레이/알림 서비스 앱</span>
+          <span class="area-count">~8 세션</span>
+        </div>
+        <div class="area-desc">스크린샷 캡처, 포그라운드 앱 정보 추출, 알림 관리를 수행하는 Android 오버레이 서비스 개발. 알림 스택 불안정, 키보드 포커스 탈취, 화면 회전 버그 수정 및 OverlayService 아키텍처 리팩토링 작업. Claude는 디버깅, Timber 로그 마이그레이션, PR 생성 및 리뷰 처리를 포함한 멀티 파일 반복 수정을 지원.</div>
+      </div>
+      <div class="project-area">
+        <div class="area-header">
+          <span class="area-name">Android 업데이트 매니저 &amp; SDK 배포</span>
+          <span class="area-count">~7 세션</span>
+        </div>
+        <div class="area-desc">APK 다운로드 무결성 검사, 재시도 로직, WorkManager 기반 자동 업데이트 제약 조건을 갖춘 Android 앱 업데이트 관리 시스템 구축 및 유지보수. Maven Local에 Android 라이브러리 퍼블리싱, 월렛 SDK의 refreshToken 레이스 컨디션 디버깅, SDK 배포 전략(SNAPSHOT, submodule) 탐색 포함. Claude는 Gradle 설정, 멀티 파일 구현, 릴리스 워크플로우를 지원.</div>
+      </div>
+      <div class="project-area">
+        <div class="area-header">
+          <span class="area-name">SDUI/Remote Compose 마이그레이션 &amp; 아키텍처</span>
+          <span class="area-count">~5 세션</span>
+        </div>
+        <div class="area-desc">Server-Driven UI를 Remote Compose 또는 Compose Multiplatform으로 마이그레이션하는 탐색적 작업 (데스크톱 POC 및 문서 작성 포함). 아키텍처, 애니메이션, 데이터 모델 개선을 위한 상세 파일 수준 리팩토링 계획도 포함. Claude는 계획 문서와 동작하는 프로토타입을 생성했으나, 아키텍처에 대한 오해로 사용자 수정이 필요했음.</div>
+      </div>
+      <div class="project-area">
+        <div class="area-header">
+          <span class="area-name">릴리스 트래커 웹 앱</span>
+          <span class="area-count">~3 세션</span>
+        </div>
+        <div class="area-desc">릴리스 추적용 HTML/JavaScript 웹 앱 유지보수. 스키마 마이그레이션과 함께 Backlog 탭 추가 및 QA 날짜 배포 수정 포함. Claude는 프론트엔드 변경과 업데이트가 올바르게 표시되지 않는 localStorage 캐싱 문제 디버깅을 처리.</div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">요청한 작업 유형</div>
+        <div class="bar-row"><div class="bar-label">버그 수정</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#2563eb"></div></div><div class="bar-value">26</div></div>
+        <div class="bar-row"><div class="bar-label">커밋 & PR</div><div class="bar-track"><div class="bar-fill" style="width:76.9%;background:#2563eb"></div></div><div class="bar-value">20</div></div>
+        <div class="bar-row"><div class="bar-label">Git 작업</div><div class="bar-track"><div class="bar-fill" style="width:69.2%;background:#2563eb"></div></div><div class="bar-value">18</div></div>
+        <div class="bar-row"><div class="bar-label">코드 리뷰 처리</div><div class="bar-track"><div class="bar-fill" style="width:50%;background:#2563eb"></div></div><div class="bar-value">13</div></div>
+        <div class="bar-row"><div class="bar-label">리뷰 처리</div><div class="bar-track"><div class="bar-fill" style="width:34.6%;background:#2563eb"></div></div><div class="bar-value">9</div></div>
+        <div class="bar-row"><div class="bar-label">Git 워크플로우</div><div class="bar-track"><div class="bar-fill" style="width:34.6%;background:#2563eb"></div></div><div class="bar-value">9</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">가장 많이 사용한 도구</div>
+        <div class="bar-row"><div class="bar-label">Bash</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#0891b2"></div></div><div class="bar-value">3044</div></div>
+        <div class="bar-row"><div class="bar-label">Read</div><div class="bar-track"><div class="bar-fill" style="width:59.9%;background:#0891b2"></div></div><div class="bar-value">1822</div></div>
+        <div class="bar-row"><div class="bar-label">Edit</div><div class="bar-track"><div class="bar-fill" style="width:46.6%;background:#0891b2"></div></div><div class="bar-value">1419</div></div>
+        <div class="bar-row"><div class="bar-label">Grep</div><div class="bar-track"><div class="bar-fill" style="width:20.3%;background:#0891b2"></div></div><div class="bar-value">618</div></div>
+        <div class="bar-row"><div class="bar-label">Agent</div><div class="bar-track"><div class="bar-fill" style="width:10.8%;background:#0891b2"></div></div><div class="bar-value">330</div></div>
+        <div class="bar-row"><div class="bar-label">Write</div><div class="bar-track"><div class="bar-fill" style="width:9.8%;background:#0891b2"></div></div><div class="bar-value">299</div></div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">언어</div>
+        <div class="bar-row"><div class="bar-label">HTML</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#10b981"></div></div><div class="bar-value">456</div></div>
+        <div class="bar-row"><div class="bar-label">Markdown</div><div class="bar-track"><div class="bar-fill" style="width:63.8%;background:#10b981"></div></div><div class="bar-value">291</div></div>
+        <div class="bar-row"><div class="bar-label">JavaScript</div><div class="bar-track"><div class="bar-fill" style="width:11.6%;background:#10b981"></div></div><div class="bar-value">53</div></div>
+        <div class="bar-row"><div class="bar-label">Shell</div><div class="bar-track"><div class="bar-fill" style="width:9.6%;background:#10b981"></div></div><div class="bar-value">44</div></div>
+        <div class="bar-row"><div class="bar-label">JSON</div><div class="bar-track"><div class="bar-fill" style="width:5.9%;background:#10b981"></div></div><div class="bar-value">27</div></div>
+        <div class="bar-row"><div class="bar-label">Python</div><div class="bar-track"><div class="bar-fill" style="width:0.9%;background:#10b981"></div></div><div class="bar-value">4</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">세션 유형</div>
+        <div class="bar-row"><div class="bar-label">반복 개선</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#8b5cf6"></div></div><div class="bar-value">22</div></div>
+        <div class="bar-row"><div class="bar-label">다중 작업</div><div class="bar-track"><div class="bar-fill" style="width:77.3%;background:#8b5cf6"></div></div><div class="bar-value">17</div></div>
+        <div class="bar-row"><div class="bar-label">단일 작업</div><div class="bar-track"><div class="bar-fill" style="width:40.9%;background:#8b5cf6"></div></div><div class="bar-value">9</div></div>
+        <div class="bar-row"><div class="bar-label">미정의</div><div class="bar-track"><div class="bar-fill" style="width:4.5%;background:#8b5cf6"></div></div><div class="bar-value">1</div></div>
+        <div class="bar-row"><div class="bar-label">탐색</div><div class="bar-track"><div class="bar-fill" style="width:4.5%;background:#8b5cf6"></div></div><div class="bar-value">1</div></div>
+      </div>
+    </div>
+
+    <h2 id="section-usage">사용 패턴 분석</h2>
+    <div class="narrative">
+      <p>당신은 Claude Code를 일상적인 Android 개발 워크플로우의 핵심 도구로 사용하는 <strong>높은 생산성의 수정 주도형 개발자</strong>입니다. 25일간 134개 세션에서 241개 커밋을 푸시했으며, 이는 하루 약 10개 커밋에 해당하는 놀라운 속도입니다. 일반적인 워크플로우는 버그 수정, PR 생성, 코드 리뷰 처리를 포함하며, 이를 단일 세션에서 연속으로 처리합니다. <strong>상세한 사전 스펙을 제공하지 않고</strong> 간결한 작업 설명만 주며 Claude가 코드베이스를 탐색하고 알아서 해결하기를 기대합니다. Claude가 아키텍처 결정에서 실수할 때(자주 발생) 단호하게 방향을 수정하고 진행합니다.</p>
+      <p>가장 특징적인 점은 <strong>철저한 아키텍처 수호자</strong>라는 것입니다. 잘못된 접근 방식을 빠르게 포착하고(25건의 wrong_approach 마찰) 프로젝트 컨벤션을 위반하는 Claude의 제안을 주저 없이 거부합니다. 불필요한 try/catch 래핑, 잘못된 언어의 코멘트, develop 브랜치에 대한 실수 커밋 등이 그 예입니다. 이런 마찰에도 불구하고 만족도는 매우 높고(129건 만족) 성공률도 우수합니다(분석된 50건 중 39건 완전 달성). 이는 <strong>Claude를 빠르지만 가끔 부주의한 주니어 개발자</strong>로 다루는 법을 터득했음을 시사합니다. Bash(3,044회)와 Read(1,822회) 도구를 많이 사용하여, 코드 편집만이 아닌 실제 디바이스에서의 빌드, 배포, 검증을 원함을 보여줍니다.</p>
+      <div class="key-insight"><strong>핵심 패턴:</strong> 구현은 Claude에게 위임하되 아키텍처 오류를 적극적으로 개입하여 수정하는 빠르게 움직이는 테크 리드로서, Claude를 생산적이지만 아키텍처적으로는 경험이 부족한 페어 프로그래머로 활용합니다.</div>
+    </div>
+
+    <div class="chart-card" style="margin: 24px 0;">
+      <div class="chart-title">사용자 응답 시간 분포</div>
+      <div class="bar-row"><div class="bar-label">2-10초</div><div class="bar-track"><div class="bar-fill" style="width:43.7%;background:#6366f1"></div></div><div class="bar-value">66</div></div>
+      <div class="bar-row"><div class="bar-label">10-30초</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#6366f1"></div></div><div class="bar-value">151</div></div>
+      <div class="bar-row"><div class="bar-label">30초-1분</div><div class="bar-track"><div class="bar-fill" style="width:86.1%;background:#6366f1"></div></div><div class="bar-value">130</div></div>
+      <div class="bar-row"><div class="bar-label">1-2분</div><div class="bar-track"><div class="bar-fill" style="width:88.7%;background:#6366f1"></div></div><div class="bar-value">134</div></div>
+      <div class="bar-row"><div class="bar-label">2-5분</div><div class="bar-track"><div class="bar-fill" style="width:87.4%;background:#6366f1"></div></div><div class="bar-value">132</div></div>
+      <div class="bar-row"><div class="bar-label">5-15분</div><div class="bar-track"><div class="bar-fill" style="width:84.1%;background:#6366f1"></div></div><div class="bar-value">127</div></div>
+      <div class="bar-row"><div class="bar-label">>15분</div><div class="bar-track"><div class="bar-fill" style="width:32.5%;background:#6366f1"></div></div><div class="bar-value">49</div></div>
+      <div style="font-size: 12px; color: #64748b; margin-top: 8px;">중간값: 75.6초 &bull; 평균: 229.2초</div>
+    </div>
+
+    <div class="chart-card" style="margin: 24px 0;">
+      <div class="chart-title">멀티 클로딩 (병렬 세션)</div>
+      <div style="display: flex; gap: 24px; margin: 12px 0;">
+        <div style="text-align: center;"><div style="font-size: 24px; font-weight: 700; color: #7c3aed;">78</div><div style="font-size: 11px; color: #64748b; text-transform: uppercase;">중첩 이벤트</div></div>
+        <div style="text-align: center;"><div style="font-size: 24px; font-weight: 700; color: #7c3aed;">98</div><div style="font-size: 11px; color: #64748b; text-transform: uppercase;">관련 세션</div></div>
+        <div style="text-align: center;"><div style="font-size: 24px; font-weight: 700; color: #7c3aed;">29%</div><div style="font-size: 11px; color: #64748b; text-transform: uppercase;">전체 메시지 비율</div></div>
+      </div>
+      <p style="font-size: 13px; color: #475569; margin-top: 12px;">여러 Claude Code 세션을 동시에 실행합니다. 세션이 시간적으로 겹칠 때 병렬 워크플로우가 감지됩니다.</p>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">시간대별 메시지 (KST)</div>
+        <div class="bar-row"><div class="bar-label">오전 (6-12)</div><div class="bar-track"><div class="bar-fill" style="width:44.5%;background:#8b5cf6"></div></div><div class="bar-value">330</div></div>
+        <div class="bar-row"><div class="bar-label">오후 (12-18)</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#8b5cf6"></div></div><div class="bar-value">742</div></div>
+        <div class="bar-row"><div class="bar-label">저녁 (18-24)</div><div class="bar-track"><div class="bar-fill" style="width:3.6%;background:#8b5cf6"></div></div><div class="bar-value">27</div></div>
+        <div class="bar-row"><div class="bar-label">새벽 (0-6)</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:#8b5cf6"></div></div><div class="bar-value">0</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">도구 에러 발생</div>
+        <div class="bar-row"><div class="bar-label">명령 실패</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#dc2626"></div></div><div class="bar-value">116</div></div>
+        <div class="bar-row"><div class="bar-label">사용자 거부</div><div class="bar-track"><div class="bar-fill" style="width:56%;background:#dc2626"></div></div><div class="bar-value">65</div></div>
+        <div class="bar-row"><div class="bar-label">기타</div><div class="bar-track"><div class="bar-fill" style="width:53.4%;background:#dc2626"></div></div><div class="bar-value">62</div></div>
+        <div class="bar-row"><div class="bar-label">파일 변경됨</div><div class="bar-track"><div class="bar-fill" style="width:13.8%;background:#dc2626"></div></div><div class="bar-value">16</div></div>
+        <div class="bar-row"><div class="bar-label">파일 너무 큼</div><div class="bar-track"><div class="bar-fill" style="width:11.2%;background:#dc2626"></div></div><div class="bar-value">13</div></div>
+        <div class="bar-row"><div class="bar-label">파일 없음</div><div class="bar-track"><div class="bar-fill" style="width:6.9%;background:#dc2626"></div></div><div class="bar-value">8</div></div>
+      </div>
+    </div>
+
+    <h2 id="section-wins">인상적인 성과</h2>
+    <p class="section-intro">24일간 134개 세션에서 인상적으로 효율적인 Android 개발 파이프라인을 구축하여, 분석된 세션의 78%에서 완전한 성공을 달성했습니다.</p>
+    <div class="big-wins">
+      <div class="big-win">
+        <div class="big-win-title">엔드투엔드 PR 라이프사이클 관리</div>
+        <div class="big-win-desc">브랜치 생성부터 커밋, PR 제출, 리뷰어 코멘트 해결까지 Claude가 모든 것을 처리하는 원활한 워크플로우를 구축했습니다. 한 세션에서 5개 이상의 리뷰 스레드를 처리하기도 합니다. commit-pr과 agent-review 스킬은 코드 리뷰 처리의 지루한 부분을 효과적으로 자동화하여 아키텍처 결정에 집중할 수 있게 해줍니다.</div>
+      </div>
+      <div class="big-win">
+        <div class="big-win-title">복잡한 Android 버그 진단</div>
+        <div class="big-win-desc">refreshToken 레이스 컨디션, 근접 wake lock 문제, 알림 스택 불안정, 손상된 APK 다운로드 등 정말 어려운 플랫폼 버그를 다루며 근본 원인을 찾을 때까지 Claude를 통한 반복적 디버깅 사이클을 진행합니다. refreshToken 레이스 컨디션 세션이 대표적인 사례로, 진단부터 3중 방어 구현, SDK 2.2.0 출시까지 한 흐름으로 완료했습니다.</div>
+      </div>
+      <div class="big-win">
+        <div class="big-win-title">강력한 아키텍처 가드레일</div>
+        <div class="big-win-desc">domain 레이어에 Android 의존성 추가 방지, 과도하게 설계된 솔루션 수정, 클린 repository 패턴 강제 등 프로젝트 아키텍처를 위반하는 Claude를 일관되게 잡아내고 수정합니다. 이는 설계 결정에 대한 완전한 소유권을 유지하면서 Claude를 힘 배율기로 활용하고 있음을 보여주며, 241개 커밋 전반에서 높은 코드 품질을 유지합니다.</div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">가장 도움이 된 Claude 역량</div>
+        <div class="bar-row"><div class="bar-label">멀티 파일 변경</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#16a34a"></div></div><div class="bar-value">27</div></div>
+        <div class="bar-row"><div class="bar-label">우수한 디버깅</div><div class="bar-track"><div class="bar-fill" style="width:55.6%;background:#16a34a"></div></div><div class="bar-value">15</div></div>
+        <div class="bar-row"><div class="bar-label">정확한 코드 편집</div><div class="bar-track"><div class="bar-fill" style="width:18.5%;background:#16a34a"></div></div><div class="bar-value">5</div></div>
+        <div class="bar-row"><div class="bar-label">선제적 도움</div><div class="bar-track"><div class="bar-fill" style="width:7.4%;background:#16a34a"></div></div><div class="bar-value">2</div></div>
+        <div class="bar-row"><div class="bar-label">좋은 설명</div><div class="bar-track"><div class="bar-fill" style="width:3.7%;background:#16a34a"></div></div><div class="bar-value">1</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">성과 결과</div>
+        <div class="bar-row"><div class="bar-label">부분 달성</div><div class="bar-track"><div class="bar-fill" style="width:2.6%;background:#8b5cf6"></div></div><div class="bar-value">1</div></div>
+        <div class="bar-row"><div class="bar-label">대부분 달성</div><div class="bar-track"><div class="bar-fill" style="width:25.6%;background:#8b5cf6"></div></div><div class="bar-value">10</div></div>
+        <div class="bar-row"><div class="bar-label">완전 달성</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#8b5cf6"></div></div><div class="bar-value">39</div></div>
+      </div>
+    </div>
+
+    <h2 id="section-friction">문제 발생 지점</h2>
+    <p class="section-intro">세션 전반적으로는 성공적이지만, Claude가 잘못된 아키텍처 결정을 내리거나 솔루션을 과도하게 복잡하게 만들거나 근본 원인을 잘못 진단하면서 상당한 시간이 낭비되고 있습니다.</p>
+    <div class="friction-categories">
+      <div class="friction-category">
+        <div class="friction-title">단순한 해법 대신 잘못된 접근</div>
+        <div class="friction-desc">Claude가 더 단순한 솔루션이 있을 때 반복적으로 과도하게 복잡하거나 잘못된 솔루션을 시도하여 여러 번의 수정 라운드가 필요합니다. 초기 프롬프트에서 제약 조건이나 원하는 접근 방식을 명시하면 상당한 왕복을 줄일 수 있습니다.</div>
+        <ul class="friction-examples">
+          <li>IME 닫기 탭 처리에서 Claude가 잘못된 파일, 잘못된 이벤트 핸들링, 과도하게 복잡한 커스텀 포인터 로직을 여러 차례 시도한 후에야 사용자가 간단한 detectTapGestures 솔루션으로 유도</li>
+          <li>Claude가 Maven 퍼블리싱을 위해 프로젝트 구조를 과도하게 탐색하고 RC 마이그레이션 분석을 과도하게 복잡화하여, 생산적인 작업이 시작되기 전 여러 번 접근 방식을 리디렉션해야 했음</li>
+        </ul>
+      </div>
+      <div class="friction-category">
+        <div class="friction-title">아키텍처 및 코드베이스 오해</div>
+        <div class="friction-desc">Claude가 domain 레이어 순수성이나 git 브랜칭 규칙 같은 프로젝트의 아키텍처 컨벤션을 자주 위반합니다. 이러한 제약 조건을 명시적으로 문서화한 CLAUDE.md나 시스템 프롬프트가 도움이 될 수 있습니다.</div>
+        <ul class="friction-examples">
+          <li>Claude가 domain 레이어에 Android 의존성을 추가하고 불필요한 별도의 repository를 주입하려 해서, 한 세션에서 아키텍처를 두 번 수정해야 했음</li>
+          <li>Claude가 feature 브랜치 대신 develop에 직접 커밋하고 이후 요청 없이 develop에 머지하여, cherry-pick과 롤백이 필요했음</li>
+        </ul>
+      </div>
+      <div class="friction-category">
+        <div class="friction-title">잘못된 근본 원인 진단</div>
+        <div class="friction-desc">Claude의 초기 진단이 종종 틀려서 실제 문제가 식별되기 전에 헛된 수정 반복이 발생합니다. 구현 전에 가능성 순으로 정렬된 여러 가설을 제시하도록 요청하면 이런 잘못된 시작을 줄일 수 있습니다.</div>
+        <ul class="friction-examples">
+          <li>알림 배지 문제에서 Claude는 기능이 완전히 활성화되어 있고 사용자 권한 누락이 원인이라고 주장했지만, 실제 문제는 시스템 UID 앱에 필요한 enabled_notification_listeners 등록 누락이었음</li>
+          <li>유령 통화 알림 버그에서 Claude가 처음에는 sync-first 레이스 컨디션을 원인으로 지목했지만, 로그 분석 결과 푸시가 늦게 도착한 것이 원인이었고, 이후 쿨다운 기반 수정을 시도한 뒤에야 올바른 상태 체크 접근 방식에 도달</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">주요 마찰 유형</div>
+        <div class="bar-row"><div class="bar-label">잘못된 접근</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#dc2626"></div></div><div class="bar-value">25</div></div>
+        <div class="bar-row"><div class="bar-label">버그 있는 코드</div><div class="bar-track"><div class="bar-fill" style="width:72%;background:#dc2626"></div></div><div class="bar-value">18</div></div>
+        <div class="bar-row"><div class="bar-label">요청 오해</div><div class="bar-track"><div class="bar-fill" style="width:44%;background:#dc2626"></div></div><div class="bar-value">11</div></div>
+        <div class="bar-row"><div class="bar-label">과도한 변경</div><div class="bar-track"><div class="bar-fill" style="width:32%;background:#dc2626"></div></div><div class="bar-value">8</div></div>
+        <div class="bar-row"><div class="bar-label">API 에러</div><div class="bar-track"><div class="bar-fill" style="width:20%;background:#dc2626"></div></div><div class="bar-value">5</div></div>
+        <div class="bar-row"><div class="bar-label">사용자 거부</div><div class="bar-track"><div class="bar-fill" style="width:4%;background:#dc2626"></div></div><div class="bar-value">1</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">추정 만족도 (모델 추정)</div>
+        <div class="bar-row"><div class="bar-label">불만</div><div class="bar-track"><div class="bar-fill" style="width:0.8%;background:#eab308"></div></div><div class="bar-value">1</div></div>
+        <div class="bar-row"><div class="bar-label">불만족</div><div class="bar-track"><div class="bar-fill" style="width:23.3%;background:#eab308"></div></div><div class="bar-value">30</div></div>
+        <div class="bar-row"><div class="bar-label">만족 추정</div><div class="bar-track"><div class="bar-fill" style="width:100%;background:#eab308"></div></div><div class="bar-value">129</div></div>
+        <div class="bar-row"><div class="bar-label">만족</div><div class="bar-track"><div class="bar-fill" style="width:10.9%;background:#eab308"></div></div><div class="bar-value">14</div></div>
+      </div>
+    </div>
+
+    <h2 id="section-features">시도할 기능</h2>
+    <div class="claude-md-section">
+      <h3>CLAUDE.md 추가 제안 사항</h3>
+      <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Claude Code에 복사해서 붙여넣으면 CLAUDE.md에 추가됩니다.</p>
+      <div class="claude-md-item">
+        <code class="cmd-code">명시적으로 요청하지 않는 한 버전 범프, 의존성 변경 또는 설정 수정을 하지 않습니다. 변경 사항은 요청된 범위로 최소화합니다.</code>
+        <div class="cmd-why">여러 세션에서 Claude가 원치 않는 버전 범프, 작동하는 Maven/GPG 설정 제거, 불필요한 기본값 추가, 최소한의 수정이 필요할 때 과도한 엔지니어링을 했습니다.</div>
+      </div>
+      <div class="claude-md-item">
+        <code class="cmd-code">Git 워크플로우: 명시적인 사용자 승인 없이 develop 또는 main에 머지하지 않습니다. 항상 feature 브랜치를 생성합니다. 커밋을 되돌리거나 수정한 후에는 PR 설명을 선제적으로 업데이트합니다.</code>
+        <div class="cmd-why">Claude가 반복적으로 허가 없이 develop에 머지하고, 잘못된 브랜치에 커밋하고, 변경 후 PR 설명 업데이트를 잊어서 여러 세션에서 사용자 개입이 필요했습니다.</div>
+      </div>
+      <div class="claude-md-item">
+        <code class="cmd-code">아키텍처: Domain 레이어는 순수 Kotlin을 유지합니다 - Android 의존성이나 프레임워크 특정 import를 사용하지 않습니다. 요청되지 않은 불필요한 repository나 추상화를 주입하지 않습니다.</code>
+        <div class="cmd-why">사용자가 domain 레이어에 Android 의존성을 추가하고 불필요한 repository 추상화를 생성하는 Claude를 여러 번 수정해야 했으며, 이는 반복되는 아키텍처 오해를 나타냅니다.</div>
+      </div>
+      <div class="claude-md-item">
+        <code class="cmd-code">버그 수정 시 가장 단순한 솔루션부터 시작합니다. 과도한 try/catch, 쿨다운 메커니즘, 복잡한 추상화로 과도하게 설계하지 않습니다. 최소한의 표적 수정을 선호합니다.</code>
+        <div class="cmd-why">마찰 데이터에서 반복적인 과도한 엔지니어링이 나타남: 과도한 try/catch 적용, 간단한 IME 닫기에 과도하게 복잡한 포인터 로직, 단순한 상태 체크 전 쿨다운 기반 수정 - 모두 사용자 수정이 필요했습니다.</div>
+      </div>
+      <div class="claude-md-item">
+        <code class="cmd-code">코드 변경 완료 후 자동으로 커밋하거나 머지하지 않고 다음 단계를 확인합니다.</code>
+        <div class="cmd-why">여러 세션에서 Claude가 요청 없이 머지/커밋하여 롤백과 사용자 개입이 필요했습니다.</div>
+      </div>
+      <div class="claude-md-item">
+        <code class="cmd-code">모든 코멘트, 커밋 메시지, PR 설명은 명시적으로 다르게 요청하지 않는 한 영어로 작성합니다.</code>
+        <div class="cmd-why">Claude가 최소 한 세션에서 잘못된 언어로 코멘트와 메시지를 작성하여 수정이 필요했습니다.</div>
+      </div>
+    </div>
+
+    <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Claude Code에 복사해서 붙여넣으면 설정해줍니다.</p>
+    <div class="features-section">
+      <div class="feature-card">
+        <div class="feature-title">Custom Skills (커스텀 스킬)</div>
+        <div class="feature-oneliner">단일 /command로 실행되는 재사용 가능한 프롬프트 워크플로우</div>
+        <div class="feature-why"><strong>추천 이유:</strong> commit-pr과 agent-review 스킬을 이미 많이 사용하고 있습니다(20+ 커밋/PR 세션, 13+ 리뷰 처리 세션). 아키텍처 규칙이 내장된 /fix 스킬을 만들면 domain 레이어 순수성과 과도한 엔지니어링 관련 반복적인 마찰을 방지할 수 있습니다.</div>
+        <div class="feature-examples">
+          <div class="feature-example">
+            <div class="example-code-row">
+              <code class="example-code">mkdir -p .claude/skills/fix && cat > .claude/skills/fix/SKILL.md << 'EOF'
+# Fix Skill
+1. 필요한 최소한의 변경만 식별 - 추가 리팩토링 금지
+2. Domain 레이어: 순수 Kotlin만, Android import 금지
+3. 수정이 컴파일되는지 빌드 및 확인
+4. develop에 머지하거나 버전 범프 금지
+5. 사용자에게 확인: 브랜치 + PR 생성, 아니면 커밋만?
+EOF</code>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-title">Hooks (훅)</div>
+        <div class="feature-oneliner">pre-commit 같은 라이프사이클 이벤트에서 쉘 명령을 자동 실행</div>
+        <div class="feature-why"><strong>추천 이유:</strong> 241개 커밋과 잘못된 브랜치에 커밋하거나 빌드 체크를 잊는 반복적인 문제가 있으므로, 현재 브랜치를 검증하고 빌드 체크를 실행하는 pre-commit 훅이 실수를 사전에 방지합니다.</div>
+        <div class="feature-examples">
+          <div class="feature-example">
+            <div class="example-code-row">
+              <code class="example-code">// .claude/settings.json에 추가
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -q 'git merge\\|git push.*develop\\|git push.*main'; then echo 'BLOCK: 명시적 사용자 승인 없이 develop/main에 머지 또는 푸시 금지' && exit 1; fi"
+          }
+        ]
+      }
+    ]
+  }
+}</code>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-title">Headless Mode (헤드리스 모드)</div>
+        <div class="feature-oneliner">자동화 작업을 위해 Claude를 비대화형으로 실행</div>
+        <div class="feature-why"><strong>추천 이유:</strong> 9개 이상의 빌드/배포 세션과 빈번한 PR 리뷰 사이클을 처리합니다. CI에서 리뷰 코멘트 해결이나 린트 수정을 자동화하면 반복적인 워크플로우에서 상당한 시간을 절약할 수 있습니다.</div>
+        <div class="feature-examples">
+          <div class="feature-example">
+            <div class="example-code-row">
+              <code class="example-code">claude -p "현재 PR의 미해결 리뷰 코멘트를 모두 읽고, 각각 최소한의 변경으로 수정하고, 푸시하고, 각 스레드에 답장" --allowedTools "Bash,Read,Edit,Write,Grep"</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2 id="section-patterns">새로운 사용법</h2>
+    <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Claude Code에 복사해서 붙여넣으면 안내해줍니다.</p>
+    <div class="patterns-section">
+      <div class="pattern-card">
+        <div class="pattern-title">아키텍처 제약 조건을 선제적으로 제공</div>
+        <div class="pattern-summary">세션 시작 시 명시적인 아키텍처 규칙을 제시하여 중간 수정을 방지합니다.</div>
+        <div class="pattern-detail">25개 세션에서 'wrong_approach' 마찰이 발생했는데, 주로 Claude가 아키텍처 패턴(domain 레이어 순수성, 불필요한 추상화, 과도한 엔지니어링)을 위반했기 때문입니다. 가장 생산적인 세션은 수정이 일찍 이루어진 세션이었습니다. 초기 프롬프트에 제약 조건을 추가하면 2-3회의 왕복 수정 사이클을 제거할 수 있습니다.</div>
+        <div class="copyable-prompt-section">
+          <div class="prompt-label">Claude Code에 붙여넣기:</div>
+          <div class="copyable-prompt-row">
+            <code class="copyable-prompt">[버그 설명] 수정해줘. 규칙: domain 레이어는 순수 Kotlin(Android import 금지), 가장 단순한 수정 사용, 요청하지 않는 한 새로운 추상화나 repository 추가 금지. 코딩 전 계획부터 보여줘.</code>
+          </div>
+        </div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-title">디버깅 세션에서 진단 우선 요청</div>
+        <div class="pattern-summary">잘못된 접근의 반복을 피하기 위해 Claude에게 수정 전 진단을 먼저 요청합니다.</div>
+        <div class="pattern-detail">여러 세션(비디오 재생, 유령 알림, IME 닫기)에서 Claude가 근본 원인을 이해하기 전에 수정에 뛰어들어 3회 이상의 반복이 필요했습니다. refreshToken 세션은 철저한 진단 덕분에 성공했습니다. 진단 우선 접근 방식을 요청하면 최소 8개 세션에서 상당한 왕복을 줄일 수 있었을 것입니다.</div>
+        <div class="copyable-prompt-section">
+          <div class="prompt-label">Claude Code에 붙여넣기:</div>
+          <div class="copyable-prompt-row">
+            <code class="copyable-prompt">이 이슈 디버깅해줘: [설명]. 먼저 관련 코드와 로그를 분석하여 근본 원인을 파악해줘. 코드 변경 전에 진단과 제안된 수정을 승인받기 위해 먼저 보여줘.</code>
+          </div>
+        </div>
+      </div>
+      <div class="pattern-card">
+        <div class="pattern-title">PR 리뷰 처리를 단일 세션으로 일괄 처리</div>
+        <div class="pattern-summary">점진적 요청 대신 리뷰 코멘트 해결을 하나의 집중된 프롬프트로 결합합니다.</div>
+        <div class="pattern-detail">22개 이상의 세션이 코드 리뷰 처리와 PR 워크플로우에 집중했습니다. agent-review 스킬 세션(예: 3개 파일에 걸친 5개 이슈가 있는 PR #76)은 매우 효율적이었습니다. 모든 리뷰 세션을 이런 방식으로 구조화하면(Claude에게 모든 코멘트를 한번에 제공) 컨텍스트 전환이 줄고 더 일관된 수정이 가능합니다.</div>
+        <div class="copyable-prompt-section">
+          <div class="prompt-label">Claude Code에 붙여넣기:</div>
+          <div class="copyable-prompt-row">
+            <code class="copyable-prompt">현재 PR의 미해결 리뷰 코멘트를 모두 처리해줘. 각 코멘트에 대해: 읽고, 최소한의 변경으로 수정을 구현하고, 변경된 내용을 설명하며 리뷰어에게 답장하고, 스레드를 resolve해줘. 그런 다음 모든 변경 사항을 하나의 커밋으로 푸시해줘.</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2 id="section-horizon">미래 전망</h2>
+    <p class="section-intro">134개 세션은 버그 수정, PR 사이클, 코드 리뷰가 지배하는 성숙한 AI 지원 워크플로우를 보여주며, 데이터에서 보이는 반복적인 마찰 패턴을 제거하는 자동화에 적합합니다.</p>
+    <div class="horizon-section">
+      <div class="horizon-card">
+        <div class="horizon-title">자율 PR 리뷰 해결 파이프라인</div>
+        <div class="horizon-possible">42개 세션이 PR 생성과 리뷰 처리를 포함하고 330번의 서브 에이전트 호출이 이미 사용 중이므로, 리뷰-수정-푸시 사이클을 완전히 자동화할 수 있습니다. 에이전트가 열린 PR을 모니터링하고, 리뷰 코멘트를 파싱하고, 수정을 적용하고, 빌드를 실행하고, 푸시할 수 있습니다 - 현재 여러 세션에 걸쳐 왕복 개입이 필요한 전체 루프를 처리합니다.</div>
+        <div class="horizon-tip"><strong>시작하기:</strong> Claude Code의 서브 에이전트 스폰을 사용하여 기존 agent-review 스킬과 유사하지만 완전히 자율적인 리뷰 핸들러 에이전트를 생성하세요.</div>
+      </div>
+      <div class="horizon-card">
+        <div class="horizon-title">병렬 아키텍처 인식 버그 진단 에이전트</div>
+        <div class="horizon-possible">가장 큰 마찰 원인은 wrong_approach(25건)이며, 주로 아키텍처 오해(domain 레이어 순수성, repository 패턴, Compose 버전 제약)에서 비롯됩니다. 아키텍처 규칙이 사전 구성된 에이전트가 코드베이스를 병렬로 탐색하고, 실제 패턴에 대해 근본 원인을 진단하고, 현재 평균 3회 이상의 반복 대신 첫 시도에서 컨벤션을 준수하는 수정을 제안할 수 있습니다.</div>
+        <div class="horizon-tip"><strong>시작하기:</strong> 아키텍처 규칙(domain 레이어 제한, DI 패턴, Compose 버전)이 포함된 CLAUDE.md를 만들고 병렬 서브 에이전트를 사용하세요 - 하나는 진단용, 하나는 테스트 및 빌드에 대한 수정 검증용.</div>
+      </div>
+      <div class="horizon-card">
+        <div class="horizon-title">가드레일을 갖춘 엔드투엔드 피처 브랜치 자동화</div>
+        <div class="horizon-possible">전체 사이클(브랜치 생성, 멀티 파일 변경, 빌드, 배포, PR, 리뷰)에 상당한 세션을 소비하고 있으며, 잘못된 브랜치에 대한 실수 커밋, 원치 않는 추가 변경, 머지 실수로 인한 반복적 마찰이 있습니다. 단일 프롬프트로 마찰 데이터에 나타나는 정확한 실수를 방지하는 명시적 가드레일과 함께 전체 워크플로우를 조율할 수 있습니다.</div>
+        <div class="horizon-tip"><strong>시작하기:</strong> Claude Code의 git 도구를 명시적 pre-commit 체크 및 worktree 격리와 결합하여 브랜칭 컨벤션을 준수하면서 전체 피처 라이프사이클을 자율적으로 실행하세요.</div>
+      </div>
+    </div>
+
+    <div class="fun-ending">
+      <div class="fun-headline">"Claude가 허가 없이 develop 브랜치에 코드를 머지한 뒤, 머쓱하게 롤백해야 했던 사건"</div>
+      <div class="fun-detail">room 뷰에서 사용자명 클릭을 비활성화하는 기능을 작업하던 중, Claude가 git에 너무 열정적이어서 feature 브랜치에 변경사항을 유지하는 대신 develop 브랜치에 직접 머지해버렸습니다. 사용자가 개입하여 롤백을 요청해야 했습니다 - 회사 이메일에서 '전체 답장'을 누른 것과 같은 AI 버전의 실수였습니다.</div>
+    </div>
+  </div>
+</body>
+</html>

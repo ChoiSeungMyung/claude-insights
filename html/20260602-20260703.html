@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>Claude Code 인사이트</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; color: #334155; line-height: 1.65; padding: 48px 24px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { font-size: 32px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    h2 { font-size: 20px; font-weight: 600; color: #0f172a; margin-top: 48px; margin-bottom: 16px; }
+    .subtitle { color: #64748b; font-size: 15px; margin-bottom: 32px; }
+    .nav-toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 32px 0; padding: 16px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
+    .nav-toc a { font-size: 12px; color: #64748b; text-decoration: none; padding: 6px 12px; border-radius: 6px; background: #f1f5f9; transition: all 0.15s; }
+    .nav-toc a:hover { background: #e2e8f0; color: #334155; }
+    .stats-row { display: flex; gap: 24px; margin-bottom: 40px; padding: 20px 0; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #0f172a; }
+    .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; }
+    .at-a-glance { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #f59e0b; border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; }
+    .glance-title { font-size: 16px; font-weight: 700; color: #92400e; margin-bottom: 16px; }
+    .glance-sections { display: flex; flex-direction: column; gap: 12px; }
+    .glance-section { font-size: 14px; color: #78350f; line-height: 1.6; }
+    .glance-section strong { color: #92400e; }
+    .see-more { color: #b45309; text-decoration: none; font-size: 13px; white-space: nowrap; }
+    .see-more:hover { text-decoration: underline; }
+    .project-areas { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+    .project-area { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; }
+    .area-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .area-name { font-weight: 600; font-size: 15px; color: #0f172a; }
+    .area-count { font-size: 12px; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; }
+    .area-desc { font-size: 14px; color: #475569; line-height: 1.5; }
+    .narrative { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+    .narrative p { margin-bottom: 12px; font-size: 14px; color: #475569; line-height: 1.7; }
+    .key-insight { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; margin-top: 12px; font-size: 14px; color: #166534; }
+    .section-intro { font-size: 14px; color: #64748b; margin-bottom: 16px; }
+    .big-wins { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+    .big-win { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; }
+    .big-win-title { font-weight: 600; font-size: 15px; color: #166534; margin-bottom: 8px; }
+    .big-win-desc { font-size: 14px; color: #15803d; line-height: 1.5; }
+    .friction-categories { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+    .friction-category { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 16px; }
+    .friction-title { font-weight: 600; font-size: 15px; color: #991b1b; margin-bottom: 6px; }
+    .friction-desc { font-size: 13px; color: #7f1d1d; margin-bottom: 10px; }
+    .friction-examples { margin: 0 0 0 20px; font-size: 13px; color: #334155; }
+    .friction-examples li { margin-bottom: 4px; }
+    .claude-md-section { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+    .claude-md-section h3 { font-size: 14px; font-weight: 600; color: #1e40af; margin: 0 0 12px 0; }
+    .claude-md-actions { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #dbeafe; }
+    .copy-all-btn { background: #2563eb; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+    .copy-all-btn:hover { background: #1d4ed8; }
+    .copy-all-btn.copied { background: #16a34a; }
+    .claude-md-item { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; padding: 10px 0; border-bottom: 1px solid #dbeafe; }
+    .claude-md-item:last-child { border-bottom: none; }
+    .cmd-checkbox { margin-top: 2px; }
+    .cmd-code { background: white; padding: 8px 12px; border-radius: 4px; font-size: 12px; color: #1e40af; border: 1px solid #bfdbfe; font-family: monospace; display: block; white-space: pre-wrap; word-break: break-word; flex: 1; }
+    .cmd-why { font-size: 12px; color: #64748b; width: 100%; padding-left: 24px; margin-top: 4px; }
+    .features-section, .patterns-section { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+    .feature-card { background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 16px; }
+    .pattern-card { background: #f0f9ff; border: 1px solid #7dd3fc; border-radius: 8px; padding: 16px; }
+    .feature-title, .pattern-title { font-weight: 600; font-size: 15px; color: #0f172a; margin-bottom: 6px; }
+    .feature-oneliner { font-size: 14px; color: #475569; margin-bottom: 8px; }
+    .pattern-summary { font-size: 14px; color: #475569; margin-bottom: 8px; }
+    .feature-why, .pattern-detail { font-size: 13px; color: #334155; line-height: 1.5; }
+    .feature-examples { margin-top: 12px; }
+    .feature-example { padding: 8px 0; border-top: 1px solid #d1fae5; }
+    .feature-example:first-child { border-top: none; }
+    .example-desc { font-size: 13px; color: #334155; margin-bottom: 6px; }
+    .example-code-row { display: flex; align-items: flex-start; gap: 8px; }
+    .example-code { flex: 1; background: #f1f5f9; padding: 8px 12px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #334155; overflow-x: auto; white-space: pre-wrap; }
+    .copyable-prompt-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+    .copyable-prompt-row { display: flex; align-items: flex-start; gap: 8px; }
+    .copyable-prompt { flex: 1; background: #f8fafc; padding: 10px 12px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #334155; border: 1px solid #e2e8f0; white-space: pre-wrap; line-height: 1.5; }
+    .feature-code { background: #f8fafc; padding: 12px; border-radius: 6px; margin-top: 12px; border: 1px solid #e2e8f0; display: flex; align-items: flex-start; gap: 8px; }
+    .feature-code code { flex: 1; font-family: monospace; font-size: 12px; color: #334155; white-space: pre-wrap; }
+    .pattern-prompt { background: #f8fafc; padding: 12px; border-radius: 6px; margin-top: 12px; border: 1px solid #e2e8f0; }
+    .pattern-prompt code { font-family: monospace; font-size: 12px; color: #334155; display: block; white-space: pre-wrap; margin-bottom: 8px; }
+    .prompt-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
+    .copy-btn { background: #e2e8f0; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; color: #475569; flex-shrink: 0; }
+    .copy-btn:hover { background: #cbd5e1; }
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0; }
+    .chart-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; }
+    .chart-title { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 12px; }
+    .bar-row { display: flex; align-items: center; margin-bottom: 6px; }
+    .bar-label { width: 100px; font-size: 11px; color: #475569; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { flex: 1; height: 6px; background: #f1f5f9; border-radius: 3px; margin: 0 8px; }
+    .bar-fill { height: 100%; border-radius: 3px; }
+    .bar-value { width: 28px; font-size: 11px; font-weight: 500; color: #64748b; text-align: right; }
+    .empty { color: #94a3b8; font-size: 13px; }
+    .horizon-section { display: flex; flex-direction: column; gap: 16px; }
+    .horizon-card { background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%); border: 1px solid #c4b5fd; border-radius: 8px; padding: 16px; }
+    .horizon-title { font-weight: 600; font-size: 15px; color: #5b21b6; margin-bottom: 8px; }
+    .horizon-possible { font-size: 14px; color: #334155; margin-bottom: 10px; line-height: 1.5; }
+    .horizon-tip { font-size: 13px; color: #6b21a8; background: rgba(255,255,255,0.6); padding: 8px 12px; border-radius: 4px; }
+    .feedback-header { margin-top: 48px; color: #64748b; font-size: 16px; }
+    .feedback-intro { font-size: 13px; color: #94a3b8; margin-bottom: 16px; }
+    .feedback-section { margin-top: 16px; }
+    .feedback-section h3 { font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 12px; }
+    .feedback-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+    .feedback-card.team-card { background: #eff6ff; border-color: #bfdbfe; }
+    .feedback-card.model-card { background: #faf5ff; border-color: #e9d5ff; }
+    .feedback-title { font-weight: 600; font-size: 14px; color: #0f172a; margin-bottom: 6px; }
+    .feedback-detail { font-size: 13px; color: #475569; line-height: 1.5; }
+    .feedback-evidence { font-size: 12px; color: #64748b; margin-top: 8px; }
+    .fun-ending { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #fbbf24; border-radius: 12px; padding: 24px; margin-top: 40px; text-align: center; }
+    .fun-headline { font-size: 18px; font-weight: 600; color: #78350f; margin-bottom: 8px; }
+    .fun-detail { font-size: 14px; color: #92400e; }
+    .collapsible-section { margin-top: 16px; }
+    .collapsible-header { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px 0; border-bottom: 1px solid #e2e8f0; }
+    .collapsible-header h3 { margin: 0; font-size: 14px; font-weight: 600; color: #475569; }
+    .collapsible-arrow { font-size: 12px; color: #94a3b8; transition: transform 0.2s; }
+    .collapsible-content { display: none; padding-top: 16px; }
+    .collapsible-content.open { display: block; }
+    .collapsible-header.open .collapsible-arrow { transform: rotate(90deg); }
+    @media (max-width: 640px) { .charts-row { grid-template-columns: 1fr; } .stats-row { justify-content: center; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Claude Code 인사이트</h1>
+    <p class="subtitle">73개 세션(전체 95개)에서 680개 메시지 | 2026-06-02 ~ 2026-07-03</p>
+
+
+    <div class="at-a-glance">
+      <div class="glance-title">한눈에 보기</div>
+      <div class="glance-sections">
+        <div class="glance-section"><strong>잘 되고 있는 것:</strong> 당신의 두드러진 습관은 회의적 검증입니다. 그럴듯하지만 틀린 진단을 넘어 실제 근본 원인까지 파고들며, 코루틴 취소가 backoff 윈도우를 오염시킨 버그나 누락된 스키마 마이그레이션 같은 어려운 버그를 실기기 로그로 추적했습니다. 또한 출력을 그대로 믿는 대신 사실 관계를 바로잡고, 빌드 검증 → PR 오픈 → 머지 전 리뷰 코멘트 해결이라는 규율 있는 PR 라이프사이클을 운영하여 리뷰 과정에서 실제 버그를 잡아냈습니다. <a href="#section-wins" class="see-more">인상적인 작업들 →</a></div>
+        <div class="glance-section"><strong>발목을 잡는 것:</strong> Claude 쪽에서 반복되는 문제는 성급한 근본 원인 결론입니다. 디버깅 세션에서 검증 전에 잘못된 진단(서버 미전송, Firebase 누락)에 반복적으로 매달렸고, 한 사례에서는 실제 원인인 WebSocket 재연결 문제가 드러나기 전에 서버 팀의 노력을 낭비시켰습니다. 사용자 쪽 마찰은 주로 범위와 환경 문제였습니다 — 계획만 원했는데 구현하거나 수동 제어를 원했는데 앱을 실행하는 등, 의도한 경계가 사전에 설정되지 않아 Claude가 먼저 행동했고, 분류기 게이트와 토큰 제한이 수동 우회를 강제했습니다. <a href="#section-friction" class="see-more">문제가 생기는 지점 →</a></div>
+        <div class="glance-section"><strong>바로 시도할 만한 것:</strong> agent-review 스킬에 크게 의존하고 있으니, 반복되는 패턴을 Custom Skills로 더 공식화해 보세요 — 예를 들어 증거 순위가 매겨진 근본 원인을 산출하고 편집 전에 멈추는 '진단 전용' 스킬. 자주 필요한 코드베이스 탐색과 웹 리서치에는 Task Agents를 시도해 메인 스레드의 집중을 유지할 수 있습니다. 빌드/검증 단계를 자동 실행하는 Hooks를 도입하면 누락된 버튼이나 어긋난 커서 같은 실수를 리뷰 전에 잡을 수 있습니다. <a href="#section-features" class="see-more">시도해 볼 기능 →</a></div>
+        <div class="glance-section"><strong>야심 찬 워크플로우:</strong> 모델이 발전할수록 디버깅을 통째로 위임하고 싶어지겠지만, 세션 데이터는 수정안을 제시하기 전에 가설 순위화와 증거 수집을 강제하는 워크플로우가 더 큰 이득임을 시사합니다 — 손 놓는 디버거가 아니라 잘못된 단서를 줄이는 것이 목표입니다. 테스트 게이트 루프가 강화되면 로직 버그를 미리 잡아주겠지만, Compose의 시각적 매칭은 여전히 사람의 눈이 필요합니다. 제어 선호가 작업마다 달랐던 만큼, 자율성을 늘리기보다 작업별로 범위를 확인하는 워크플로우가 가장 도움이 될 것입니다. <a href="#section-horizon" class="see-more">앞으로의 전망 →</a></div>
+      </div>
+    </div>
+
+
+    <nav class="nav-toc">
+      <a href="#section-work">무엇을 작업하는가</a>
+      <a href="#section-usage">CC 사용 방식</a>
+      <a href="#section-wins">인상적인 작업들</a>
+      <a href="#section-friction">문제가 생기는 지점</a>
+      <a href="#section-features">시도해 볼 기능</a>
+      <a href="#section-patterns">새로운 사용 패턴</a>
+      <a href="#section-horizon">앞으로의 전망</a>
+      <a href="#section-feedback">팀 피드백</a>
+    </nav>
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-value">680</div><div class="stat-label">메시지</div></div>
+      <div class="stat"><div class="stat-value">+23,698/-2,259</div><div class="stat-label">라인</div></div>
+      <div class="stat"><div class="stat-value">377</div><div class="stat-label">파일</div></div>
+      <div class="stat"><div class="stat-value">17</div><div class="stat-label">일</div></div>
+      <div class="stat"><div class="stat-value">40</div><div class="stat-label">메시지/일</div></div>
+    </div>
+
+
+    <h2 id="section-work">무엇을 작업하는가</h2>
+    <div class="project-areas">
+
+        <div class="project-area">
+          <div class="area-header">
+            <span class="area-name">Android 메시징 앱 개발 (Matrix/Element-X)</span>
+            <span class="area-count">~22 세션</span>
+          </div>
+          <div class="area-desc">Matrix 기반 메신저 앱 작업으로, 통화 처리(거절/재벨울림, 다이렉트 콜 푸시), 알림, 읽지 않은 메시지 수 버그, 채팅 목록 미리보기/정렬을 다뤘습니다. Claude는 로그 분석과 기기 디버깅을 통한 근본 원인 진단에 집중적으로 사용되었으나, 때때로 성급하게 잘못된 결론에 도달해 교정이 필요했습니다.</div>
+        </div>
+
+        <div class="project-area">
+          <div class="area-header">
+            <span class="area-name">온보딩 &amp; Compose UI 구현</span>
+            <span class="area-count">~15 세션</span>
+          </div>
+          <div class="area-desc">Figma 목업과 스크린샷을 기준으로 Jetpack Compose 화면을 구축·다듬고, 온보딩 플로우 수정(KeyManager 초기화, ANR, DoneScreen 제거)을 진행했습니다. Claude는 UI 코드를 작성하고 빌드로 검증했지만, 디자인 디테일(버튼 누락, 지나치게 선명한 색상, 커서 정렬)을 자주 놓쳐 사용자가 지적해야 했습니다.</div>
+        </div>
+
+        <div class="project-area">
+          <div class="area-header">
+            <span class="area-name">버전 관리 &amp; PR 리뷰 워크플로우</span>
+            <span class="area-count">~12 세션</span>
+          </div>
+          <div class="area-desc">변경 사항 커밋, PR 오픈, 리뷰 코멘트 해결을 진행했으며, 종종 전용 agent-review 스킬을 사용했습니다. Claude는 리뷰에서 드러난 실제 버그 수정을 포함해 대체로 이를 끝까지 완수했으나, 스레드 해결 단계는 사용자 승인을 기다리며 멈추는 경우가 있었습니다.</div>
+        </div>
+
+        <div class="project-area">
+          <div class="area-header">
+            <span class="area-name">빌드, 배포 &amp; 프로젝트 설정</span>
+            <span class="area-count">~10 세션</span>
+          </div>
+          <div class="area-desc">Maven Local SDK 배포, R8 OOM 힙 수정, APK 서명, iOS를 향한 KMP/CMP 마이그레이션, 37개 파일 프로젝트 이름 변경을 진행했습니다. Claude는 다중 파일 리팩토링과 빌드 검증을 처리했으나, 설정 드리프트(오래된 버전, 불일치하는 Kotlin/Metro 버전)로 재작업이 발생했습니다.</div>
+        </div>
+
+        <div class="project-area">
+          <div class="area-header">
+            <span class="area-name">기술 문서 &amp; 분석</span>
+            <span class="area-count">~8 세션</span>
+          </div>
+          <div class="area-desc">그룹 채팅 아이덴티티 딜레마에 대한 사내 문서, 백서 갭 분석, README 동기화, PDF로 내보낸 맞춤 사과문 작성을 진행했습니다. 출력은 Markdown이 지배적이었으나, Claude가 지나치게 낙관적이거나 근거 없는 프레이밍에서 벗어나도록 반복적인 방향 수정이 필요했습니다.</div>
+        </div>
+
+    </div>
+
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">원했던 작업</div>
+        <div class="bar-row">
+        <div class="bar-label">디버깅</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#2563eb"></div></div>
+        <div class="bar-value">31</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">반복적 문서 다듬기</div>
+        <div class="bar-track"><div class="bar-fill" style="width:48.38709677419355%;background:#2563eb"></div></div>
+        <div class="bar-value">15</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">코드 리뷰</div>
+        <div class="bar-track"><div class="bar-fill" style="width:29.03225806451613%;background:#2563eb"></div></div>
+        <div class="bar-value">9</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">버그 수정</div>
+        <div class="bar-track"><div class="bar-fill" style="width:25.806451612903224%;background:#2563eb"></div></div>
+        <div class="bar-value">8</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">반복적 편집</div>
+        <div class="bar-track"><div class="bar-fill" style="width:22.58064516129032%;background:#2563eb"></div></div>
+        <div class="bar-value">7</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">버전 관리</div>
+        <div class="bar-track"><div class="bar-fill" style="width:19.35483870967742%;background:#2563eb"></div></div>
+        <div class="bar-value">6</div>
+      </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">가장 많이 사용한 도구</div>
+        <div class="bar-row">
+        <div class="bar-label">Bash</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#0891b2"></div></div>
+        <div class="bar-value">1588</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">Edit</div>
+        <div class="bar-track"><div class="bar-fill" style="width:46.977329974811084%;background:#0891b2"></div></div>
+        <div class="bar-value">746</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">Read</div>
+        <div class="bar-track"><div class="bar-fill" style="width:45.40302267002519%;background:#0891b2"></div></div>
+        <div class="bar-value">721</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">Write</div>
+        <div class="bar-track"><div class="bar-fill" style="width:16.435768261964736%;background:#0891b2"></div></div>
+        <div class="bar-value">261</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">TaskUpdate</div>
+        <div class="bar-track"><div class="bar-fill" style="width:16.05793450881612%;background:#0891b2"></div></div>
+        <div class="bar-value">255</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">TaskCreate</div>
+        <div class="bar-track"><div class="bar-fill" style="width:8.564231738035264%;background:#0891b2"></div></div>
+        <div class="bar-value">136</div>
+      </div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">언어</div>
+        <div class="bar-row">
+        <div class="bar-label">Markdown</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#10b981"></div></div>
+        <div class="bar-value">270</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">HTML</div>
+        <div class="bar-track"><div class="bar-fill" style="width:11.851851851851853%;background:#10b981"></div></div>
+        <div class="bar-value">32</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">YAML</div>
+        <div class="bar-track"><div class="bar-fill" style="width:3.3333333333333335%;background:#10b981"></div></div>
+        <div class="bar-value">9</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">JSON</div>
+        <div class="bar-track"><div class="bar-fill" style="width:2.5925925925925926%;background:#10b981"></div></div>
+        <div class="bar-value">7</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">JavaScript</div>
+        <div class="bar-track"><div class="bar-fill" style="width:2.2222222222222223%;background:#10b981"></div></div>
+        <div class="bar-value">6</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">Shell</div>
+        <div class="bar-track"><div class="bar-fill" style="width:1.8518518518518516%;background:#10b981"></div></div>
+        <div class="bar-value">5</div>
+      </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">세션 유형</div>
+        <div class="bar-row">
+        <div class="bar-label">단일 작업</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#8b5cf6"></div></div>
+        <div class="bar-value">23</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">다중 작업</div>
+        <div class="bar-track"><div class="bar-fill" style="width:82.6086956521739%;background:#8b5cf6"></div></div>
+        <div class="bar-value">19</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">반복적 다듬기</div>
+        <div class="bar-track"><div class="bar-fill" style="width:78.26086956521739%;background:#8b5cf6"></div></div>
+        <div class="bar-value">18</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">탐색</div>
+        <div class="bar-track"><div class="bar-fill" style="width:34.78260869565217%;background:#8b5cf6"></div></div>
+        <div class="bar-value">8</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">미분류</div>
+        <div class="bar-track"><div class="bar-fill" style="width:17.391304347826086%;background:#8b5cf6"></div></div>
+        <div class="bar-value">4</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">간단한 질문</div>
+        <div class="bar-track"><div class="bar-fill" style="width:4.3478260869565215%;background:#8b5cf6"></div></div>
+        <div class="bar-value">1</div>
+      </div>
+      </div>
+    </div>
+
+
+    <h2 id="section-usage">Claude Code 사용 방식</h2>
+    <div class="narrative">
+      <p>당신은 주로 Android/Kotlin 개발(집중적인 Compose UI 작업, KMP 마이그레이션, Matrix/메신저 기능)을 하며, 지배적인 작업 방식은 <strong>촘촘한 교정 감독과 결합된 진단형 디버깅</strong>입니다. 상세한 사전 스펙을 작성하기보다 증상이나 목표(버그, 재현할 Figma 스크린샷, 빌드 실패)를 서술하고 Claude가 조사하게 한 뒤, 공격적으로 방향을 수정합니다. 마찰 데이터가 이를 명확히 보여줍니다: 세션을 반복적으로 중단시켰고(코드베이스 탐색에서 웹 리서치로 방향 전환, 진단이 끝나기 전에 Claude를 정지, 수동 검증을 원할 때 자율적인 실행/설치/강제 종료 시도를 차단), 높은 Bash 사용량(1588)과 73개 세션에 걸친 68개 커밋은 실제 빌드-커밋-PR 루프를 운영하며 Claude가 성공을 주장만 하는 것이 아니라 실제 빌드로 작업을 검증하길 기대함을 나타냅니다.</p>
+<p>두드러진 특징은 <strong>Claude의 결론을 액면 그대로 받아들이지 않는다</strong>는 점입니다. 잘못된 Kotlin/Metro 버전 조합을 바로잡았고, api/impl 분리에 대한 Claude의 주장을 반박하기 위해 공식 문서를 제시했으며, 목업에서 Claude가 누락한 'Get Started' 버튼을 지적했고, 지나치게 선명한 색상과 잘못 클릭 가능하게 만든 카드를 거부했습니다. 만족도 분포(159 '만족 추정' 대 32 '불만족')와 마찰 카테고리 — 잘못된 접근(33), 버그 있는 코드(22), 요청 오해(19) — 는 상호작용의 상당 부분이 Claude의 성급하거나 잘못된 근본 원인 주장을 잡아내는 일이었음을 반영합니다. Claude의 반복된 잘못된 결론(서버 미전송, 그다음 Firebase)이 실제 원인인 distributor WebSocket이 발견되기 전에 서버 팀의 노력을 낭비시킨 알림 실패 세션은, 당신이 Claude를 짧은 고삐로 통제하는 이유를 가장 명확하게 보여주는 사례입니다.</p>
+<p>또한 상당한 <strong>반복적 문서 다듬기</strong>(15 세션)를 수행하며, 여기서는 더욱 까다롭습니다: 지나치게 낙관적인 초안, 근거 없는 동의, 프레이밍 문제를 밀어붙여 그룹 채팅 기획 문서와 백서 갭 분석에서 여러 차례의 교정 라운드를 요구했습니다. 코드와 산문 모두에서 패턴은 동일합니다 — <strong>Claude의 첫 답변을 결과물이 아니라 심문할 초안으로 취급합니다</strong>. AskUserQuestion(115)과 Task 추적에 의존하지만, 속도를 늦추면 그것들도 중단시킵니다. 31일 동안 455시간이라는 수치는 짧은 단발성 작업이 아니라 길고 깊은 작업 세션을 의미합니다.</p>
+      <div class="key-insight"><strong>핵심 패턴:</strong> 증상을 서술하고 Claude가 조사하게 한 뒤 촘촘히 감독합니다 — 중단시키고, 빌드를 직접 검증하고, 첫 답변을 신뢰하는 대신 Claude의 성급하거나 잘못된 결론을 교정합니다.</div>
+    </div>
+
+
+    <!-- Response Time Distribution -->
+    <div class="chart-card" style="margin: 24px 0;">
+      <div class="chart-title">사용자 응답 시간 분포</div>
+      <div class="bar-row">
+        <div class="bar-label">2-10초</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#6366f1"></div></div>
+        <div class="bar-value">90</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">10-30초</div>
+        <div class="bar-track"><div class="bar-fill" style="width:92.22222222222223%;background:#6366f1"></div></div>
+        <div class="bar-value">83</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">30초-1분</div>
+        <div class="bar-track"><div class="bar-fill" style="width:73.33333333333333%;background:#6366f1"></div></div>
+        <div class="bar-value">66</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">1-2분</div>
+        <div class="bar-track"><div class="bar-fill" style="width:82.22222222222221%;background:#6366f1"></div></div>
+        <div class="bar-value">74</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">2-5분</div>
+        <div class="bar-track"><div class="bar-fill" style="width:81.11111111111111%;background:#6366f1"></div></div>
+        <div class="bar-value">73</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">5-15분</div>
+        <div class="bar-track"><div class="bar-fill" style="width:44.44444444444444%;background:#6366f1"></div></div>
+        <div class="bar-value">40</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">&gt;15분</div>
+        <div class="bar-track"><div class="bar-fill" style="width:33.33333333333333%;background:#6366f1"></div></div>
+        <div class="bar-value">30</div>
+      </div>
+      <div style="font-size: 12px; color: #64748b; margin-top: 8px;">
+        중앙값: 55.3초 &bull; 평균: 224.6초
+      </div>
+    </div>
+
+    <!-- Multi-clauding Section (matching Python reference) -->
+    <div class="chart-card" style="margin: 24px 0;">
+      <div class="chart-title">멀티 클로딩 (병렬 세션)</div>
+
+        <div style="display: flex; gap: 24px; margin: 12px 0;">
+          <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: 700; color: #7c3aed;">22</div>
+            <div style="font-size: 11px; color: #64748b; text-transform: uppercase;">중첩 이벤트</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: 700; color: #7c3aed;">32</div>
+            <div style="font-size: 11px; color: #64748b; text-transform: uppercase;">관련 세션</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: 700; color: #7c3aed;">16%</div>
+            <div style="font-size: 11px; color: #64748b; text-transform: uppercase;">메시지 비율</div>
+          </div>
+        </div>
+        <p style="font-size: 13px; color: #475569; margin-top: 12px;">
+          여러 Claude Code 세션을 동시에 실행합니다. 멀티 클로딩은 세션이 시간상 겹칠 때 감지되며,
+          병렬 워크플로우를 시사합니다.
+        </p>
+
+    </div>
+
+    <!-- Time of Day & Tool Errors -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title" style="display: flex; align-items: center; gap: 12px;">
+          시간대별 사용자 메시지
+          <select id="timezone-select" style="font-size: 12px; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
+            <option value="0">PT (UTC-8)</option>
+            <option value="3">ET (UTC-5)</option>
+            <option value="8">London (UTC)</option>
+            <option value="9">CET (UTC+1)</option>
+            <option value="17">Tokyo (UTC+9)</option>
+            <option value="custom">직접 입력...</option>
+          </select>
+          <input type="number" id="custom-offset" placeholder="UTC 오프셋" style="display: none; width: 80px; font-size: 12px; padding: 4px; border-radius: 4px; border: 1px solid #e2e8f0;">
+        </div>
+        <div id="hour-histogram">
+      <div class="bar-row">
+        <div class="bar-label">아침 (6-12)</div>
+        <div class="bar-track"><div class="bar-fill" style="width:77.8082191780822%;background:#8b5cf6"></div></div>
+        <div class="bar-value">284</div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">오후 (12-18)</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#8b5cf6"></div></div>
+        <div class="bar-value">365</div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">저녁 (18-24)</div>
+        <div class="bar-track"><div class="bar-fill" style="width:8.493150684931507%;background:#8b5cf6"></div></div>
+        <div class="bar-value">31</div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">심야 (0-6)</div>
+        <div class="bar-track"><div class="bar-fill" style="width:0%;background:#8b5cf6"></div></div>
+        <div class="bar-value">0</div>
+      </div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">발생한 도구 오류</div>
+        <div class="bar-row">
+        <div class="bar-label">기타</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#dc2626"></div></div>
+        <div class="bar-value">54</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">명령 실패</div>
+        <div class="bar-track"><div class="bar-fill" style="width:53.70370370370371%;background:#dc2626"></div></div>
+        <div class="bar-value">29</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">사용자 거부</div>
+        <div class="bar-track"><div class="bar-fill" style="width:42.592592592592595%;background:#dc2626"></div></div>
+        <div class="bar-value">23</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">파일 변경됨</div>
+        <div class="bar-track"><div class="bar-fill" style="width:25.925925925925924%;background:#dc2626"></div></div>
+        <div class="bar-value">14</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">파일 없음</div>
+        <div class="bar-track"><div class="bar-fill" style="width:5.555555555555555%;background:#dc2626"></div></div>
+        <div class="bar-value">3</div>
+      </div>
+      </div>
+    </div>
+
+
+    <h2 id="section-wins">인상적인 작업들</h2>
+    <p class="section-intro">한 달에 걸친 73개 세션 동안 Claude Code를 주로 Android/Kotlin 개발, 디버깅, 기술 문서 작성에 사용했으며, 출력을 무비판적으로 받아들이기보다 검증하고 방향을 수정하는 경향이 강했습니다.</p>
+    <div class="big-wins">
+
+        <div class="big-win">
+          <div class="big-win-title">실기기 디버깅으로 근본 원인까지</div>
+          <div class="big-win-desc">그럴듯하지만 틀린 가설들을 반복적으로 넘어서 실제 근본 원인을 찾아냈으며, 코루틴 취소가 backoff 윈도우를 오염시킨 버그나 super.onUpgrade 스키마 마이그레이션 누락 같은 어려운 버그를 실기기 로그로 추적했습니다. 특히 초기 근본 원인 주장이 틀렸을 때(WebSocket 재연결 사례) 잘못된 수정을 배포하는 대신 조사를 계속 이어갔습니다. 이 회의적 태도가 많은 진단이 결국 정확했던 이유입니다.</div>
+        </div>
+
+        <div class="big-win">
+          <div class="big-win-title">리뷰를 포함한 완전한 PR 라이프사이클</div>
+          <div class="big-win-desc">변경 구현, 통과하는 빌드로 검증, PR 오픈, 머지 전 리뷰 코멘트 해결이라는 일관된 워크플로우를 운영했으며, 종종 전용 agent-review 스킬을 활용했습니다. 68개의 커밋과 집중적인 TaskCreate/TaskUpdate 사용은 작업을 단발성이 아닌 구조화된 형태로 유지했음을 보여줍니다. 이 PR 전 빌드 검증 습관은 여러 차례 리뷰 과정에서 실제 버그를 잡아냈습니다.</div>
+        </div>
+
+        <div class="big-win">
+          <div class="big-win-title">사실 관계로 모델을 교정</div>
+          <div class="big-win-desc">출력을 신뢰하는 대신 실질적인 오류들을 잡아 바로잡았습니다: 불일치하는 Kotlin/Metro 버전 다운그레이드, Navigation 3 문서가 api/impl 분리를 권장하지 않는다는 거짓 주장, 그리고 재작성을 요구한 지나치게 낙관적인 백서 갭 분석. 이런 주장들에 근거를 요구한 것이 문서와 의존성 작업의 정확성을 지켜냈습니다.</div>
+        </div>
+
+    </div>
+
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">가장 도움이 된 것 (Claude의 역량)</div>
+        <div class="bar-row">
+        <div class="bar-label">우수한 디버깅</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#16a34a"></div></div>
+        <div class="bar-value">30</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">다중 파일 변경</div>
+        <div class="bar-track"><div class="bar-fill" style="width:46.666666666666664%;background:#16a34a"></div></div>
+        <div class="bar-value">14</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">정확한 코드 편집</div>
+        <div class="bar-track"><div class="bar-fill" style="width:40%;background:#16a34a"></div></div>
+        <div class="bar-value">12</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">좋은 설명</div>
+        <div class="bar-track"><div class="bar-fill" style="width:36.666666666666664%;background:#16a34a"></div></div>
+        <div class="bar-value">11</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">능동적 도움</div>
+        <div class="bar-track"><div class="bar-fill" style="width:6.666666666666667%;background:#16a34a"></div></div>
+        <div class="bar-value">2</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">빠르고 정확한 검색</div>
+        <div class="bar-track"><div class="bar-fill" style="width:3.3333333333333335%;background:#16a34a"></div></div>
+        <div class="bar-value">1</div>
+      </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">결과</div>
+        <div class="bar-row">
+        <div class="bar-label">미달성</div>
+        <div class="bar-track"><div class="bar-fill" style="width:9.375%;background:#8b5cf6"></div></div>
+        <div class="bar-value">3</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">부분 달성</div>
+        <div class="bar-track"><div class="bar-fill" style="width:31.25%;background:#8b5cf6"></div></div>
+        <div class="bar-value">10</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">대부분 달성</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#8b5cf6"></div></div>
+        <div class="bar-value">32</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">완전 달성</div>
+        <div class="bar-track"><div class="bar-fill" style="width:81.25%;background:#8b5cf6"></div></div>
+        <div class="bar-value">26</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">불분명</div>
+        <div class="bar-track"><div class="bar-fill" style="width:6.25%;background:#8b5cf6"></div></div>
+        <div class="bar-value">2</div>
+      </div>
+      </div>
+    </div>
+
+
+    <h2 id="section-friction">문제가 생기는 지점</h2>
+    <p class="section-intro">주요 마찰은 성급한 결론과 되돌려지는 자율적 행동, 그리고 수동 우회를 강제하는 환경적 장애(auto-mode 분류기, 토큰 제한, 보호된 페이지)에서 옵니다.</p>
+    <div class="friction-categories">
+
+        <div class="friction-category">
+          <div class="friction-title">디버깅에서의 성급한 근본 원인 결론</div>
+          <div class="friction-desc">가장 빈번한 워크플로우는 디버깅(31 세션)이며, 반복되는 실패는 Claude가 검증 전에 잘못된 진단을 확정하는 것입니다. 근본 원인 선언 전에 더 강한 증거를 요구하는 것 — 특히 다른 사람의 작업을 유발하는 경우 — 이 낭비되는 노력을 줄여줄 것입니다.</div>
+          <ul class="friction-examples"><li>푸시/통화 알림 세션에서 Claude는 실제 원인인 distributor WebSocket 재연결 문제 이전에 두 개의 잘못된 결론(서버 미전송, 그다음 Firebase 누락)에 도달했고, 이는 서버 팀의 노력 낭비와 사용자 불만을 야기했습니다.</li><li>앱 실행 실패 세션에서 Claude의 초기 가설에 대한 확신 때문에 여러 버그(빈 미리보기, 편집 미반영)가 부분적으로만 수정되어 추가 반복이 필요했습니다.</li></ul>
+        </div>
+
+        <div class="friction-category">
+          <div class="friction-title">교정되거나 거부되는 자율적 행동</div>
+          <div class="friction-desc">17건의 거부된 행동과 33건의 잘못된 접근 플래그는 Claude가 범위 확인 전에 행동하는 경우가 많음을 나타냅니다 — 계획만 원했는데 구현하거나, 수동 검증을 원했는데 실행하는 식입니다. 시작 시 의도(계획 대 구현, 자동 대 수동)를 확인하면 재작업을 피할 수 있습니다.</div>
+          <ul class="friction-examples"><li>수동 검증을 원했는데 Claude가 반복적으로 강제 종료, 지갑 경로 탐색, 앱 실행을 스스로 시도했고, 계획만 원한다고 명확히 하기 전에 구현을 시작했습니다.</li><li>Claude가 브랜치 이름만 보고 커밋을 &apos;데모 전용&apos;으로 표기해 직접 바로잡아야 했습니다.</li></ul>
+        </div>
+
+        <div class="friction-category">
+          <div class="friction-title">수동 우회를 강제하는 환경 및 도구 장애</div>
+          <div class="friction-desc">마찰의 상당 부분은 추론 품질이 아니라 환경 문제입니다: 분류기 게이트, 출력 토큰 제한, 접근 불가 페이지. 일부는 통제 범위 밖이지만, 이런 트리거를 피하도록 작업을 구조화하면 중단이 줄어듭니다.</div>
+          <ul class="friction-examples"><li>auto-mode 분류기가 settings.json 자체 수정을 반복적으로 차단했고 heredoc이 채팅 UI 들여쓰기로 손상되어, 터미널 명령을 여러 번 직접 실행해야 했습니다.</li><li>Claude가 보호된 React SPA 디자인 페이지에 접근하지 못했고(WebFetch 403, Safari 소스 추출 실패), 별개로 응답이 500 토큰 최대치를 초과해 API 오류가 발생했습니다 — 둘 다 개입 전까지 진행이 멈췄습니다.</li></ul>
+        </div>
+
+    </div>
+
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">주요 마찰 유형</div>
+        <div class="bar-row">
+        <div class="bar-label">잘못된 접근</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#dc2626"></div></div>
+        <div class="bar-value">33</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">버그 있는 코드</div>
+        <div class="bar-track"><div class="bar-fill" style="width:66.66666666666666%;background:#dc2626"></div></div>
+        <div class="bar-value">22</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">요청 오해</div>
+        <div class="bar-track"><div class="bar-fill" style="width:57.57575757575758%;background:#dc2626"></div></div>
+        <div class="bar-value">19</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">사용자 거부 행동</div>
+        <div class="bar-track"><div class="bar-fill" style="width:51.515151515151516%;background:#dc2626"></div></div>
+        <div class="bar-value">17</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">과도한 변경</div>
+        <div class="bar-track"><div class="bar-fill" style="width:9.090909090909092%;background:#dc2626"></div></div>
+        <div class="bar-value">3</div>
+      </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">추정 만족도 (모델 추정)</div>
+        <div class="bar-row">
+        <div class="bar-label">불만 심함</div>
+        <div class="bar-track"><div class="bar-fill" style="width:2.515723270440252%;background:#eab308"></div></div>
+        <div class="bar-value">4</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">불만족</div>
+        <div class="bar-track"><div class="bar-fill" style="width:20.125786163522015%;background:#eab308"></div></div>
+        <div class="bar-value">32</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">만족 추정</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#eab308"></div></div>
+        <div class="bar-value">159</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">만족</div>
+        <div class="bar-track"><div class="bar-fill" style="width:5.660377358490567%;background:#eab308"></div></div>
+        <div class="bar-value">9</div>
+      </div>
+      </div>
+    </div>
+
+
+
+    <h2 id="section-features">시도해 볼 기존 CC 기능</h2>
+    <div class="claude-md-section">
+      <h3>CLAUDE.md 추가 제안</h3>
+      <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">이 내용을 Claude Code에 복사하면 CLAUDE.md에 추가해 줍니다.</p>
+      <div class="claude-md-actions">
+        <button class="copy-all-btn" onclick="copyAllCheckedClaudeMd()">선택 항목 모두 복사</button>
+      </div>
+
+        <div class="claude-md-item">
+          <input type="checkbox" id="cmd-0" class="cmd-checkbox" checked data-text="&apos;## Debugging&apos; 섹션 아래에 추가\n\n버그를 진단할 때, 직접적인 증거(로그 라인, 스택 트레이스, 지목할 수 있는 코드 경로)를 확보하기 전에는 근본 원인을 단정하지 마세요. 불확실하면 가설로 제시하고, 어떤 증거가 이를 확인하거나 반박할지 말하세요.">
+          <label for="cmd-0">
+            <code class="cmd-code">버그를 진단할 때, 직접적인 증거(로그 라인, 스택 트레이스, 지목할 수 있는 코드 경로)를 확보하기 전에는 근본 원인을 단정하지 마세요. 불확실하면 가설로 제시하고, 어떤 증거가 이를 확인하거나 반박할지 말하세요.</code>
+            <button class="copy-btn" onclick="copyCmdItem(0)">복사</button>
+          </label>
+          <div class="cmd-why">여러 세션(푸시/통화 알림, 온보딩, 채팅 목록)에서 Claude가 성급하게 잘못된 근본 원인에 도달해 서버 팀을 포함한 실제 노력을 낭비시켰습니다.</div>
+        </div>
+
+        <div class="claude-md-item">
+          <input type="checkbox" id="cmd-1" class="cmd-checkbox" checked data-text="&apos;## Autonomy / Permissions&apos; 섹션 아래에 추가\n\n앱을 스스로 실행, 설치, 강제 종료, 구동하거나 시스템 경로를 탐색/수정하지 마세요. 명령을 제안하면 내가 실행하고 결과를 알려주겠습니다. 내가 명시적으로 진행하라고 하지 않는 한 이 규칙을 따르세요.">
+          <label for="cmd-1">
+            <code class="cmd-code">앱을 스스로 실행, 설치, 강제 종료, 구동하거나 시스템 경로를 탐색/수정하지 마세요. 명령을 제안하면 내가 실행하고 결과를 알려주겠습니다. 내가 명시적으로 진행하라고 하지 않는 한 이 규칙을 따르세요.</code>
+            <button class="copy-btn" onclick="copyCmdItem(1)">복사</button>
+          </label>
+          <div class="cmd-why">사용자가 수동 검증을 원할 때 Claude가 자율적으로 실행/설치/탐색하며 발생한 마찰이 여러 세션에서 나타났습니다.</div>
+        </div>
+
+        <div class="claude-md-item">
+          <input type="checkbox" id="cmd-2" class="cmd-checkbox" checked data-text="&apos;## Compose UI work&apos; 섹션 아래에 추가\n\n스크린샷이나 Figma에서 디자인을 재현할 때, 코딩 전에 보이는 모든 요소(버튼, 라벨, 상태)를 체크리스트로 열거하고, 완료 후 각 요소가 존재하는지 검증하세요.">
+          <label for="cmd-2">
+            <code class="cmd-code">스크린샷이나 Figma에서 디자인을 재현할 때, 코딩 전에 보이는 모든 요소(버튼, 라벨, 상태)를 체크리스트로 열거하고, 완료 후 각 요소가 존재하는지 검증하세요.</code>
+            <button class="copy-btn" onclick="copyCmdItem(2)">복사</button>
+          </label>
+          <div class="cmd-why">스크린샷 기반 Compose 화면에서 &apos;Get Started&apos; 버튼 등 요소가 반복적으로 누락되어 사용자가 잡아내야 했습니다.</div>
+        </div>
+
+        <div class="claude-md-item">
+          <input type="checkbox" id="cmd-3" class="cmd-checkbox" checked data-text="&apos;## Project context&apos; 아래 최상단에 추가\n\n이것은 Matrix/Element-X 위에 구축된 Android/Kotlin/Jetpack Compose 프로젝트입니다. 동작한다고 주장하기 전에 모든 코드 변경을 빌드로 검증하세요. Element-X는 AGPLv3이므로 이를 제거할 때의 저작자 표시/라이선스 영향을 반드시 플래그하세요.">
+          <label for="cmd-3">
+            <code class="cmd-code">이것은 Matrix/Element-X 위에 구축된 Android/Kotlin/Jetpack Compose 프로젝트입니다. 동작한다고 주장하기 전에 모든 코드 변경을 빌드로 검증하세요. Element-X는 AGPLv3이므로 이를 제거할 때의 저작자 표시/라이선스 영향을 반드시 플래그하세요.</code>
+            <button class="copy-btn" onclick="copyCmdItem(3)">복사</button>
+          </label>
+          <div class="cmd-why">거의 모든 세션이 Android/Compose/Matrix이고, 빌드 검증이 성공적인 결과와 상관관계가 있었으며, Play Store 준비 점검 중 AGPLv3 컴플라이언스 리스크가 발생했습니다.</div>
+        </div>
+
+    </div>
+
+
+    <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">이 내용을 Claude Code에 복사하면 알아서 설정해 줍니다.</p>
+    <div class="features-section">
+
+        <div class="feature-card">
+          <div class="feature-title">Custom Skills</div>
+          <div class="feature-oneliner">Markdown으로 저장되는 재사용 가능한 /command 프롬프트.</div>
+          <div class="feature-why"><strong>당신에게 필요한 이유:</strong> 이미 &apos;agent-review&apos; 스킬을 최소 3개의 PR 리뷰 세션에서 성공적으로 사용했습니다. 커밋/PR/리뷰 루프를 스킬로 공식화하면 68개 커밋 규모 작업에서 반복되는 준비 작업을 줄일 수 있습니다.</div>
+
+          <div class="feature-examples">
+            <div class="feature-example">
+              <div class="example-code-row">
+                <code class="example-code"># .claude/skills/review/SKILL.md
+PR 리뷰 코멘트를 가져와 각 스레드를 코드 수정으로 대응하고, 빌드로 검증한 뒤, 각 스레드에 답변하고 해결 처리하고, 커밋 후 푸시하세요. 내 승인 없이 스레드를 해결 처리하지 마세요.</code>
+                <button class="copy-btn" onclick="copyText(this)">복사</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-title">Hooks</div>
+          <div class="feature-oneliner">라이프사이클 이벤트에서 자동 실행되는 셸 명령.</div>
+          <div class="feature-why"><strong>당신에게 필요한 이유:</strong> 빌드를 직접 검증하며 R8 OOM과 proguard 실패를 겪었습니다. 편집 후 빌드/린트를 실행하는 hook이 있으면 요청하기 전에 회귀를 잡아낼 수 있습니다.</div>
+
+          <div class="feature-examples">
+            <div class="feature-example">
+              <div class="example-code-row">
+                <code class="example-code">// .claude/settings.json
+{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [{
+      &quot;matcher&quot;: &quot;Edit|Write&quot;,
+      &quot;hooks&quot;: [{&quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;./gradlew ktlintCheck -q || true&quot;}]
+    }]
+  }
+}</code>
+                <button class="copy-btn" onclick="copyText(this)">복사</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-title">Task Agents</div>
+          <div class="feature-oneliner">탐색이나 병렬 작업을 위한 집중형 서브에이전트.</div>
+          <div class="feature-why"><strong>당신에게 필요한 이유:</strong> 디버깅 세션에서 수정 전에 다중 파일 코드 경로 추적이 반복적으로 필요합니다. 전용 탐색 에이전트는 진단 단계를 편집과 분리해 성급한 결론을 줄여줍니다.</div>
+
+          <div class="feature-examples">
+            <div class="feature-example">
+              <div class="example-code-row">
+                <code class="example-code">에이전트를 사용해 CallDecline부터 재벨울림까지의 전체 코드 경로를 추적하고, 수정안을 제안하기 전에 근본 원인의 증거를 보고하세요.</code>
+                <button class="copy-btn" onclick="copyText(this)">복사</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+    </div>
+
+
+    <h2 id="section-patterns">Claude Code의 새로운 사용법</h2>
+    <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">이 내용을 Claude Code에 복사하면 단계별로 안내해 줍니다.</p>
+    <div class="patterns-section">
+
+        <div class="pattern-card">
+          <div class="pattern-title">진단과 수정 분리하기</div>
+          <div class="pattern-summary">코드를 건드리기 전에 증거 기반 진단을 산출하고 멈추도록 요청하세요.</div>
+          <div class="pattern-detail">디버깅 세션(31개)은 Claude가 먼저 코드를 추적했을 때 최고의 결과를, 잘못된 가설로 수정에 뛰어들었을 때 최악의 결과를 보여줍니다(WebSocket/Firebase 알림 사건은 서버 팀의 노력을 소모시켰습니다). 진단 전용 단계를 강제하면 잘못된 이론이 저렴하게 드러납니다. 읽지 않은 메시지 수 세션에서 코드 변경 없이 진단만 요청해 깔끔한 결과를 얻었을 때 이미 이 방식의 한 형태를 실행했습니다.</div>
+
+          <div class="copyable-prompt-section">
+            <div class="prompt-label">Claude Code에 붙여넣기:</div>
+            <div class="copyable-prompt-row">
+              <code class="copyable-prompt">이 버그의 근본 원인을 진단하세요. 구체적인 코드/로그 증거를 지목하세요. 아직 코드를 변경하지 말고, 내가 승인하거나 반려할 수 있는 가설로 마무리하세요.</code>
+              <button class="copy-btn" onclick="copyText(this)">복사</button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-title">자율 실행 전에 범위 확인하기</div>
+          <div class="pattern-summary">실행/설치/배포가 가능한지, 제안만 해야 하는지 사전에 알려주세요.</div>
+          <div class="pattern-detail">반복적인 마찰은 수동 검증을 원할 때 Claude가 강제 종료, 설치, 앱 실행을 시도한 것과 auto-mode가 settings.json 편집을 차단하고 heredoc을 손상시킨 것에서 왔습니다. 세션 시작 시 실행 경계를 명시하면 중단-재지시 사이클을 피할 수 있습니다. 여러 세션이 행동 도중 중단으로 끝났기에 특히 유의미합니다.</div>
+
+          <div class="copyable-prompt-section">
+            <div class="prompt-label">Claude Code에 붙여넣기:</div>
+            <div class="copyable-prompt-row">
+              <code class="copyable-prompt">이번 세션에서는: 명령을 제안하되 앱을 실행, 설치, 구동하는 것은 아무것도 실행하지 마세요. 내가 직접 실행하고 결과를 붙여넣겠습니다.</code>
+              <button class="copy-btn" onclick="copyText(this)">복사</button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-title">동의 대신 반박 요청하기</div>
+          <div class="pattern-summary">전제에 도전하고 사실 주장에 출처를 인용하도록 명시적으로 요청하세요.</div>
+          <div class="pattern-detail">두 개의 문서 세션에서 Claude가 지나치게 낙관적/동조적인 초안을 만들어 반복적인 방향 수정이 필요했고, Claude는 두 번 사실 관계를 교정받았습니다(Android Nav 3 api/impl 문서, Kotlin/Metro 버전 호환성). 비판적 관점과 출처 인용을 요청하면 아첨성 초안의 재작업과 자신만만하지만 틀린 주장 모두를 줄일 수 있습니다.</div>
+
+          <div class="copyable-prompt-section">
+            <div class="prompt-label">Claude Code에 붙여넣기:</div>
+            <div class="copyable-prompt-row">
+              <code class="copyable-prompt">동의하는 대신 비판적으로 검토하세요. 라이브러리 동작이나 공식 문서에 대한 모든 사실 주장에는 출처를 인용하거나 확실하지 않다고 말하세요.</code>
+              <button class="copy-btn" onclick="copyText(this)">복사</button>
+            </div>
+          </div>
+
+        </div>
+
+    </div>
+
+
+
+
+    <h2 id="section-horizon">앞으로의 전망</h2>
+    <p class="section-intro">AI 지원 개발은 단일 턴 편집에서 다단계 자율 워크플로우로 이동하고 있지만, 아래 데이터는 이번 세션 집합에 자율성 확장 시 반드시 고려해야 할 유의미한 마찰(잘못된 접근 33건, 버그 있는 코드 22건, 요청 오해 19건)이 있었음을 보여줍니다.</p>
+    <div class="horizon-section">
+
+        <div class="horizon-card">
+          <div class="horizon-title">성급한 근본 원인 결론 방지하기</div>
+          <div class="horizon-possible">디버깅 세션(31개)이 최상위 목표였지만, Claude가 초기에 잘못된 근본 원인에 매달려 여러 세션이 정체됐습니다 — 한 사례는 실제 WebSocket 재연결 문제가 드러나기 전에 서버 팀의 시간을 낭비시켰습니다. 수정안 제시 전에 증거 수집과 가설 순위화를 강제하는 워크플로우가 이를 줄일 수 있으며, 자율성만 늘린다고 디버깅이 나아진다고 가정해서는 안 됩니다. 현실적인 이득은 완전히 손 놓는 디버거가 아니라 잘못된 단서의 감소입니다.</div>
+          <div class="horizon-tip"><strong>시작하기:</strong> 로그/재현 수집에 Bash를 사용하는 구조화된 디버깅 프롬프트를 쓰고, 편집 전에 Claude가 확신 수준을 명시하도록 요구하세요. 이는 데이터에 나타난 특정 실패 패턴을 겨냥한 것이지, 일반적인 &apos;알아서 하게 두기&apos; 접근이 아닙니다.</div>
+          <div class="pattern-prompt"><div class="prompt-label">Claude Code에 붙여넣기:</div><code>이 버그의 수정안을 제안하기 전에 다음을 순서대로 수행하세요: (1) Bash로 로그/테스트에서 재현하거나 구체적인 증거를 수집, (2) 각각의 찬반 증거와 함께 최소 두 개의 경쟁하는 근본 원인 가설을 나열, (3) 확신도 순으로 순위를 매기고 최상위 가설을 확인할 추가 증거가 무엇인지 알려주기, (4) 내가 가설을 확인하기 전까지 코드를 편집하지 않기. 증거가 불충분하면 추측하지 말고 그렇다고 말하세요.</code><button class="copy-btn" onclick="copyText(this)">복사</button></div>
+        </div>
+
+        <div class="horizon-card">
+          <div class="horizon-title">테스트 게이트로 버그 있는 코드 잡기</div>
+          <div class="horizon-possible">버그 있는 코드 22건과 정확한 편집 12건은 편집이 검증 루프 없이 배포되는 경우가 많았음을 시사하며, 여러 수정(커서 정렬, 버튼 누락, 빈 미리보기)이 두 번째 반복을 필요로 했습니다. 완료 선언 전에 테스트나 빌드 게이트를 상대로 반복하면 세션에서 반복적으로 드러난 누락을 잡을 수 있습니다. 다만 작업 일부는 자동화 테스트가 약한 UI/Compose 영역이므로 — 이 방식은 로직 버그에 가장 효과적이고 시각적 매칭에는 덜 효과적입니다.</div>
+          <div class="horizon-tip"><strong>시작하기:</strong> 모든 편집 후 Bash로 빌드-테스트 게이트를 확립하고, UI 작업에는 빌드가 시각적 격차를 잡지 못하므로 스크린샷-목업 대조 체크리스트를 함께 사용하세요.</div>
+          <div class="pattern-prompt"><div class="prompt-label">Claude Code에 붙여넣기:</div><code>이 작업에서는 매 편집 세트 이후: Bash로 빌드와 관련 테스트를 실행하고, 통과하기 전까지 성공을 보고하지 마세요. 디자인에 맞추는 UI 변경이라면, 목업의 각 요소와 구현한 것을 비교하는 체크리스트도 작성하고, 내가 지적하기 전에 누락된 것을 플래그하세요. 테스트 인프라가 없으면 조용히 검증을 건너뛰지 말고 명시적으로 말하세요.</code><button class="copy-btn" onclick="copyText(this)">복사</button></div>
+        </div>
+
+        <div class="horizon-card">
+          <div class="horizon-title">자율 행동 전에 범위 명확히 하기</div>
+          <div class="horizon-possible">사용자 거부 행동 17건과 요청 오해 19건은 진단 전용이나 수동 제어를 원할 때 Claude가 때때로 행동(앱 실행, 계획 작성, 강제 종료, 설정 자체 수정)했음을 보여줍니다. 의도한 범위와 경계를 사전에 확인하는 워크플로우가 이 마찰을 예방할 것이며 — 여기서 자율성을 더 늘리면 오히려 악화될 가능성이 큽니다. 목표는 세션마다 달랐던 당신의 제어 선호를 작업별로 맞추는 것입니다.</div>
+          <div class="horizon-tip"><strong>시작하기:</strong> Claude가 자율적으로 할 수 있는 것과 승인이 필요한 것에 대한 명시적 계약으로 세션을 시작하고, 가정하고 진행하는 대신 진짜 모호한 경우에는 AskUserQuestion을 사용하게 하세요.</div>
+          <div class="pattern-prompt"><div class="prompt-label">Claude Code에 붙여넣기:</div><code>시작하기 전에 범위를 확인하세요: (a) 진단과 설명만, (b) 진단 후 승인받을 계획 제안, (c) 자율적으로 구현하고 검증 — 중 어느 것을 원하나요? 또한 앱을 내가 직접 실행/설치/배포할지, 당신이 해도 되는지 알려주세요. 지정한 범위 밖의 행동은 하지 않으며, 진짜 모호한 경우에는 가정하는 대신 질문하겠습니다.</code><button class="copy-btn" onclick="copyText(this)">복사</button></div>
+        </div>
+
+    </div>
+
+
+
+    <div class="fun-ending">
+      <div class="fun-headline">"Claude는 알림 버그를 두 번이나 자신 있게 서버 팀 탓으로 돌려 그들을 유령 사냥에 내보냈고, 진짜 범인 — 재연결하지 않던 WebSocket — 은 한참 뒤에야 붙잡혔습니다."</div>
+      <div class="fun-detail">푸시/통화 알림 디버깅 세션에서 Claude는 성급한 근본 원인 결론(처음엔 &apos;서버 미전송&apos;, 다음엔 &apos;Firebase 누락&apos;)에 뛰어들었고 둘 다 틀렸습니다. 실제 distributor WebSocket 재연결 문제가 식별되어 패치되기 전까지 서버 팀의 노력이 낭비되고 사용자는 좌절을 겪었습니다.</div>
+    </div>
+
+
+
+  </div>
+  <script>
+    function toggleCollapsible(header) {
+      header.classList.toggle('open');
+      const content = header.nextElementSibling;
+      content.classList.toggle('open');
+    }
+    function copyText(btn) {
+      const code = btn.previousElementSibling;
+      navigator.clipboard.writeText(code.textContent).then(() => {
+        btn.textContent = '복사됨!';
+        setTimeout(() => { btn.textContent = '복사'; }, 2000);
+      });
+    }
+    function copyCmdItem(idx) {
+      const checkbox = document.getElementById('cmd-' + idx);
+      if (checkbox) {
+        const text = checkbox.dataset.text;
+        navigator.clipboard.writeText(text).then(() => {
+          const btn = checkbox.nextElementSibling.querySelector('.copy-btn');
+          if (btn) { btn.textContent = '복사됨!'; setTimeout(() => { btn.textContent = '복사'; }, 2000); }
+        });
+      }
+    }
+    function copyAllCheckedClaudeMd() {
+      const checkboxes = document.querySelectorAll('.cmd-checkbox:checked');
+      const texts = [];
+      checkboxes.forEach(cb => {
+        if (cb.dataset.text) { texts.push(cb.dataset.text); }
+      });
+      const combined = texts.join('\n');
+      const btn = document.querySelector('.copy-all-btn');
+      if (btn) {
+        navigator.clipboard.writeText(combined).then(() => {
+          btn.textContent = texts.length + '개 항목 복사됨!';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = '선택 항목 모두 복사'; btn.classList.remove('copied'); }, 2000);
+        });
+      }
+    }
+    // Timezone selector for time of day chart (data is from our own analytics, not user input)
+    const rawHourCounts = {"8":11,"9":131,"10":88,"11":54,"12":33,"13":46,"14":86,"15":62,"16":86,"17":52,"18":15,"19":16};
+    function updateHourHistogram(offsetFromPT) {
+      const periods = [
+        { label: "아침 (6-12)", range: [6,7,8,9,10,11] },
+        { label: "오후 (12-18)", range: [12,13,14,15,16,17] },
+        { label: "저녁 (18-24)", range: [18,19,20,21,22,23] },
+        { label: "심야 (0-6)", range: [0,1,2,3,4,5] }
+      ];
+      const adjustedCounts = {};
+      for (const [hour, count] of Object.entries(rawHourCounts)) {
+        const newHour = (parseInt(hour) + offsetFromPT + 24) % 24;
+        adjustedCounts[newHour] = (adjustedCounts[newHour] || 0) + count;
+      }
+      const periodCounts = periods.map(p => ({
+        label: p.label,
+        count: p.range.reduce((sum, h) => sum + (adjustedCounts[h] || 0), 0)
+      }));
+      const maxCount = Math.max(...periodCounts.map(p => p.count)) || 1;
+      const container = document.getElementById('hour-histogram');
+      container.textContent = '';
+      periodCounts.forEach(p => {
+        const row = document.createElement('div');
+        row.className = 'bar-row';
+        const label = document.createElement('div');
+        label.className = 'bar-label';
+        label.textContent = p.label;
+        const track = document.createElement('div');
+        track.className = 'bar-track';
+        const fill = document.createElement('div');
+        fill.className = 'bar-fill';
+        fill.style.width = (p.count / maxCount) * 100 + '%';
+        fill.style.background = '#8b5cf6';
+        track.appendChild(fill);
+        const value = document.createElement('div');
+        value.className = 'bar-value';
+        value.textContent = p.count;
+        row.appendChild(label);
+        row.appendChild(track);
+        row.appendChild(value);
+        container.appendChild(row);
+      });
+    }
+    document.getElementById('timezone-select').addEventListener('change', function() {
+      const customInput = document.getElementById('custom-offset');
+      if (this.value === 'custom') {
+        customInput.style.display = 'inline-block';
+        customInput.focus();
+      } else {
+        customInput.style.display = 'none';
+        updateHourHistogram(parseInt(this.value));
+      }
+    });
+    document.getElementById('custom-offset').addEventListener('change', function() {
+      const parsed = parseInt(this.value, 10);
+      if (isNaN(parsed)) return;
+      updateHourHistogram(parsed + 8);
+    });
+  </script>
+</body>
+</html>
