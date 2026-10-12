@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>Claude Code 인사이트</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; color: #334155; line-height: 1.65; padding: 48px 24px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { font-size: 32px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    h2 { font-size: 20px; font-weight: 600; color: #0f172a; margin-top: 48px; margin-bottom: 16px; }
+    .subtitle { color: #64748b; font-size: 15px; margin-bottom: 32px; }
+    .nav-toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 32px 0; padding: 16px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
+    .nav-toc a { font-size: 12px; color: #64748b; text-decoration: none; padding: 6px 12px; border-radius: 6px; background: #f1f5f9; transition: all 0.15s; }
+    .nav-toc a:hover { background: #e2e8f0; color: #334155; }
+    .stats-row { display: flex; gap: 24px; margin-bottom: 40px; padding: 20px 0; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #0f172a; }
+    .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; }
+    .at-a-glance { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #f59e0b; border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; }
+    .glance-title { font-size: 16px; font-weight: 700; color: #92400e; margin-bottom: 16px; }
+    .glance-sections { display: flex; flex-direction: column; gap: 12px; }
+    .glance-section { font-size: 14px; color: #78350f; line-height: 1.6; }
+    .glance-section strong { color: #92400e; }
+    .see-more { color: #b45309; text-decoration: none; font-size: 13px; white-space: nowrap; }
+    .see-more:hover { text-decoration: underline; }
+    .auto-mode-card { background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%); border: 1px solid #60a5fa; border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; }
+    .auto-mode-title { font-size: 16px; font-weight: 700; color: #1e40af; margin-bottom: 10px; }
+    .auto-mode-desc { font-size: 14px; color: #1e3a8a; line-height: 1.6; }
+    .auto-mode-desc code { background: rgba(255,255,255,0.7); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+    .auto-mode-note { font-size: 13px; color: #1e3a8a; background: rgba(255,255,255,0.6); padding: 8px 12px; border-radius: 6px; margin-top: 10px; }
+    .auto-mode-fineprint { font-size: 11px; color: #3b82f6; margin-top: 10px; }
+    .project-areas { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+    .project-area { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; }
+    .area-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .area-name { font-weight: 600; font-size: 15px; color: #0f172a; }
+    .area-count { font-size: 12px; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; }
+    .area-desc { font-size: 14px; color: #475569; line-height: 1.5; }
+    .narrative { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+    .narrative p { margin-bottom: 12px; font-size: 14px; color: #475569; line-height: 1.7; }
+    .key-insight { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; margin-top: 12px; font-size: 14px; color: #166534; }
+    .section-intro { font-size: 14px; color: #64748b; margin-bottom: 16px; }
+    .big-wins { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+    .big-win { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; }
+    .big-win-title { font-weight: 600; font-size: 15px; color: #166534; margin-bottom: 8px; }
+    .big-win-desc { font-size: 14px; color: #15803d; line-height: 1.5; }
+    .friction-categories { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+    .friction-category { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 16px; }
+    .friction-title { font-weight: 600; font-size: 15px; color: #991b1b; margin-bottom: 6px; }
+    .friction-desc { font-size: 13px; color: #7f1d1d; margin-bottom: 10px; }
+    .friction-examples { margin: 0 0 0 20px; font-size: 13px; color: #334155; }
+    .friction-examples li { margin-bottom: 4px; }
+    .claude-md-section { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+    .claude-md-section h3 { font-size: 14px; font-weight: 600; color: #1e40af; margin: 0 0 12px 0; }
+    .claude-md-actions { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #dbeafe; }
+    .copy-all-btn { background: #2563eb; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+    .copy-all-btn:hover { background: #1d4ed8; }
+    .copy-all-btn.copied { background: #16a34a; }
+    .claude-md-item { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; padding: 10px 0; border-bottom: 1px solid #dbeafe; }
+    .claude-md-item:last-child { border-bottom: none; }
+    .cmd-checkbox { margin-top: 2px; }
+    .cmd-code { background: white; padding: 8px 12px; border-radius: 4px; font-size: 12px; color: #1e40af; border: 1px solid #bfdbfe; font-family: monospace; display: block; white-space: pre-wrap; word-break: break-word; flex: 1; }
+    .cmd-why { font-size: 12px; color: #64748b; width: 100%; padding-left: 24px; margin-top: 4px; }
+    .features-section, .patterns-section { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+    .feature-card { background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 16px; }
+    .pattern-card { background: #f0f9ff; border: 1px solid #7dd3fc; border-radius: 8px; padding: 16px; }
+    .feature-title, .pattern-title { font-weight: 600; font-size: 15px; color: #0f172a; margin-bottom: 6px; }
+    .feature-oneliner { font-size: 14px; color: #475569; margin-bottom: 8px; }
+    .pattern-summary { font-size: 14px; color: #475569; margin-bottom: 8px; }
+    .feature-why, .pattern-detail { font-size: 13px; color: #334155; line-height: 1.5; }
+    .feature-examples { margin-top: 12px; }
+    .feature-example { padding: 8px 0; border-top: 1px solid #d1fae5; }
+    .feature-example:first-child { border-top: none; }
+    .example-desc { font-size: 13px; color: #334155; margin-bottom: 6px; }
+    .example-code-row { display: flex; align-items: flex-start; gap: 8px; }
+    .example-code { flex: 1; background: #f1f5f9; padding: 8px 12px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #334155; overflow-x: auto; white-space: pre-wrap; }
+    .copyable-prompt-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+    .copyable-prompt-row { display: flex; align-items: flex-start; gap: 8px; }
+    .copyable-prompt { flex: 1; background: #f8fafc; padding: 10px 12px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #334155; border: 1px solid #e2e8f0; white-space: pre-wrap; line-height: 1.5; }
+    .feature-code { background: #f8fafc; padding: 12px; border-radius: 6px; margin-top: 12px; border: 1px solid #e2e8f0; display: flex; align-items: flex-start; gap: 8px; }
+    .feature-code code { flex: 1; font-family: monospace; font-size: 12px; color: #334155; white-space: pre-wrap; }
+    .pattern-prompt { background: #f8fafc; padding: 12px; border-radius: 6px; margin-top: 12px; border: 1px solid #e2e8f0; }
+    .pattern-prompt code { font-family: monospace; font-size: 12px; color: #334155; display: block; white-space: pre-wrap; margin-bottom: 8px; }
+    .prompt-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
+    .copy-btn { background: #e2e8f0; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; color: #475569; flex-shrink: 0; }
+    .copy-btn:hover { background: #cbd5e1; }
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0; }
+    .chart-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; }
+    .chart-title { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 12px; }
+    .bar-row { display: flex; align-items: center; margin-bottom: 6px; }
+    .bar-label { width: 100px; font-size: 11px; color: #475569; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { flex: 1; height: 6px; background: #f1f5f9; border-radius: 3px; margin: 0 8px; }
+    .bar-fill { height: 100%; border-radius: 3px; }
+    .bar-value { width: 28px; font-size: 11px; font-weight: 500; color: #64748b; text-align: right; }
+    .empty { color: #94a3b8; font-size: 13px; }
+    .horizon-section { display: flex; flex-direction: column; gap: 16px; }
+    .horizon-card { background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%); border: 1px solid #c4b5fd; border-radius: 8px; padding: 16px; }
+    .horizon-title { font-weight: 600; font-size: 15px; color: #5b21b6; margin-bottom: 8px; }
+    .horizon-possible { font-size: 14px; color: #334155; margin-bottom: 10px; line-height: 1.5; }
+    .horizon-tip { font-size: 13px; color: #6b21a8; background: rgba(255,255,255,0.6); padding: 8px 12px; border-radius: 4px; }
+    .feedback-header { margin-top: 48px; color: #64748b; font-size: 16px; }
+    .feedback-intro { font-size: 13px; color: #94a3b8; margin-bottom: 16px; }
+    .feedback-section { margin-top: 16px; }
+    .feedback-section h3 { font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 12px; }
+    .feedback-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+    .feedback-card.team-card { background: #eff6ff; border-color: #bfdbfe; }
+    .feedback-card.model-card { background: #faf5ff; border-color: #e9d5ff; }
+    .feedback-title { font-weight: 600; font-size: 14px; color: #0f172a; margin-bottom: 6px; }
+    .feedback-detail { font-size: 13px; color: #475569; line-height: 1.5; }
+    .feedback-evidence { font-size: 12px; color: #64748b; margin-top: 8px; }
+    .fun-ending { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #fbbf24; border-radius: 12px; padding: 24px; margin-top: 40px; text-align: center; }
+    .fun-headline { font-size: 18px; font-weight: 600; color: #78350f; margin-bottom: 8px; }
+    .fun-detail { font-size: 14px; color: #92400e; }
+    .collapsible-section { margin-top: 16px; }
+    .collapsible-header { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px 0; border-bottom: 1px solid #e2e8f0; }
+    .collapsible-header h3 { margin: 0; font-size: 14px; font-weight: 600; color: #475569; }
+    .collapsible-arrow { font-size: 12px; color: #94a3b8; transition: transform 0.2s; }
+    .collapsible-content { display: none; padding-top: 16px; }
+    .collapsible-content.open { display: block; }
+    .collapsible-header.open .collapsible-arrow { transform: rotate(90deg); }
+    @media (max-width: 640px) { .charts-row { grid-template-columns: 1fr; } .stats-row { justify-content: center; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Claude Code 인사이트</h1>
+    <p class="subtitle">69개 세션(전체 101개)에서 998개 메시지 | 2026-09-11 ~ 2026-10-10</p>
+
+    
+    <div class="at-a-glance">
+      <div class="glance-title">한눈에 보기</div>
+      <div class="glance-sections">
+        <div class="glance-section"><strong>잘 되고 있는 것:</strong> 당신은 Claude를 대화 상대가 아니라 납품 파이프라인으로 씁니다. 코멘트가 하나도 남지 않을 때까지 리뷰하라는 식의 명시적인 종료 조건을 주고, 이어서 squash, PR 생성, 스레드 resolve까지 맡기며, 이를 여러 worktree에서 병렬로 돌리는 경우가 많습니다. 가장 좋은 결과는 증거를 요구했을 때 나왔습니다. 디바이스 로그로 iPhone 발신 지연과 벨이 울리지 않는 버그를 실제 메커니즘까지 추적했고, 커버리지를 믿는 대신 mutation testing으로 테스트 품질을 측정했습니다. 또한 전제를 의심하는 습관 덕분에 분석이 가정된 메커니즘이 아니라 실제 메커니즘에 집중됩니다. <a href="#section-wins" class="see-more">인상적인 작업들 →</a></div>
+        <div class="glance-section"><strong>발목을 잡는 것:</strong> Claude 쪽: 첫 답변 중 상당수가 검증되지 않은 가정에 기대고 있었습니다. 당신의 Rockchip 칩 대신 스마트폰 SoC를 가정하거나, iOS 소비자를 무시하거나, 의도적인 음성 전용 범위를 감점하는 식이었습니다. 리뷰 루프 안에서는 Claude 자신의 수정이 회귀를 만들거나 이전 라운드와 모순되는 경우가 잦아 루프가 길어졌습니다. 브랜치 상태를 먼저 확인하지 않아 다른 세션의 커밋을 push한 적도 한 번 있습니다. 당신 쪽: 제약 조건과 과거 결정(하드웨어, 대상 사용자, &apos;교체하지 말 것&apos; 같은 판단)이 AGENTS.md나 PR이 아니라 대부분 머릿속에만 있었습니다. 라운드 상한 없는 열린 루프는 사용 한도나 세션 종료에 걸려 반복 도중에 끝나는 일이 많았습니다. <a href="#section-friction" class="see-more">문제가 생기는 지점 →</a></div>
+        <div class="glance-section"><strong>바로 시도할 것:</strong> git push에 PreToolUse hook을 걸어 `git status`와 `git log origin/&lt;branch&gt;..HEAD`를 실행하고, 예상치 못한 커밋이 있으면 push를 막으세요. 병렬 세션 간 충돌 유형 하나가 통째로 사라집니다. 리뷰를 0건까지 돌리는 루틴은 라운드 상한, 매 라운드가 지켜야 하는 결정 로그 파일, 테스트를 통과해야만 수정을 반영한다는 규칙을 갖춘 커스텀 스킬로 만드세요. 매시간 돌던 /nm-ticket 폴링은 cron 기반 헤드리스 모드로 옮겨 대화형 세션을 붙잡지 않게 하세요. <a href="#section-features" class="see-more">시도해볼 기능 →</a></div>
+        <div class="glance-section"><strong>야심 찬 워크플로우:</strong> 당신의 판단 없이도 수렴하는 리뷰 루프를 준비하세요. 1라운드에서 평가 기준(rubric)과 결정 로그를 고정하고, 이미 확정된 결정을 다시 열 수 없는 병렬 리뷰어 에이전트를 쓰고, 코멘트·테스트 실패·변경된 라인의 살아남은 mutant가 모두 0이 될 때만 멈추게 합니다. 그다음 단계로, 스케줄된 오케스트레이터가 iOS·Android·SDK 리포의 열린 PR마다 에이전트를 하나씩 띄우고 제품 결정만 아침 다이제스트로 올릴 수 있습니다. 짝지은 폰에서 도는 device-in-the-loop 통화 하네스가 있으면 통화 엔진 수정을 bisect하고 전후 지연 시간을 측정해 검증할 수 있습니다. 지금 그 하네스를 만들고 결정 규칙을 글로 남겨 두는 것이, 더 강력한 모델이 이런 워크플로우를 무인으로 돌릴 수 있게 하는 길입니다. <a href="#section-horizon" class="see-more">앞으로의 가능성 →</a></div>
+      </div>
+    </div>
+    
+
+    
+    <div class="auto-mode-card" id="section-auto-mode">
+      <div class="auto-mode-title">auto mode를 더 똑똑하게: /auto-mode-setup 실행</div>
+      <div class="auto-mode-desc">이미 auto mode를 쓰고 있지만, auto mode는 아직 당신의 환경을 모릅니다. <code>/auto-mode-setup</code>은 몇 분 동안 리포지토리, 신뢰하는 서비스, 일상적인 명령을 파악한 뒤 결과를 설정에 기록합니다 — auto mode의 판단이 눈에 띄게 좋아집니다. 마지막에 한 번만 승인하면 되고, 언제든 다시 실행할 수 있습니다.</div>
+    </div>
+    
+
+    <nav class="nav-toc">
+      <a href="#section-work">무엇을 작업하는가</a>
+      <a href="#section-usage">CC 사용 방식</a>
+      <a href="#section-wins">인상적인 작업들</a>
+      <a href="#section-friction">문제가 생기는 지점</a>
+      <a href="#section-features">시도해볼 기능</a>
+      <a href="#section-patterns">새로운 사용 패턴</a>
+      <a href="#section-horizon">앞으로의 가능성</a>
+      <a href="#section-feedback">팀 피드백</a>
+    </nav>
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-value">998</div><div class="stat-label">메시지</div></div>
+      <div class="stat"><div class="stat-value">+19,222/-1,843</div><div class="stat-label">라인</div></div>
+      <div class="stat"><div class="stat-value">429</div><div class="stat-label">파일</div></div>
+      <div class="stat"><div class="stat-value">17</div><div class="stat-label">일</div></div>
+      <div class="stat"><div class="stat-value">58.7</div><div class="stat-label">메시지/일</div></div>
+    </div>
+
+    
+    <h2 id="section-work">무엇을 작업하는가</h2>
+    <div class="project-areas">
+      
+        <div class="project-area">
+          <div class="area-header">
+            <span class="area-name">Matrix/Element Call 통화 엔진 &amp; VoIP 디버깅</span>
+            <span class="area-count">~11개 세션</span>
+          </div>
+          <div class="area-desc">iOS와 Android 통화 스택의 통화 실패를 진단하고 고치는 작업이 중심이었습니다. 1초 간격 sync v2 폴링 때문에 생긴 iPhone 발신 지연을 7–34초에서 0.5–1.8초로 줄인 일, matrix-js-sdk와 Element Call 위젯의 상태 처리까지 추적한 재발신/발신 시 벨 미울림 버그가 대표적입니다. Claude Code는 logcat과 디바이스 로그를 비교하고, 라이브러리를 패치하고, 실제 iPhone에 빌드를 설치하고, 통화 엔진 SDK 설계를 리뷰하고, CallKit/PushKit 질문에 답했습니다. 일부 평가는 잘못된 전제에 기대고 있어 사용자가 바로잡았습니다.</div>
+        </div>
+      
+        <div class="project-area">
+          <div class="area-header">
+            <span class="area-name">Android 빌드 시스템, 모듈 아키텍처 &amp; SDK 배포</span>
+            <span class="area-count">~11개 세션</span>
+          </div>
+          <div class="area-desc">Claude Code는 Private Phone Android 앱과 내부 SDK의 Gradle 인프라와 모듈 구조를 다뤘습니다. Gradle 9.8.0 업그레이드, modulegraph 플러그인 실패(settings 플러그인으로 적용해야 했음), PR #161과 #163으로 나간 모듈 경계 및 core/local 리팩토링, SDK 릴리스를 포함해 리포 세 곳의 minSdk를 31로 낮춘 작업이 여기에 해당합니다. 빌드, Maven Local 배포, adb 진단에 Bash를 많이 썼습니다. 빌드 실패 원인에 대한 혼선과 재현되지 않는 Android Studio 실패가 마찰이 됐습니다.</div>
+        </div>
+      
+        <div class="project-area">
+          <div class="area-header">
+            <span class="area-name">PR 리뷰 루프, 커밋 &amp; Git/Worktree 정리</span>
+            <span class="area-count">~14개 세션</span>
+          </div>
+          <div class="area-desc">가장 흔한 워크플로우는 /agent-review로 PR 리뷰 코멘트를 해결하는 것이었습니다. 이런 세션은 코멘트가 남지 않을 때까지 로컬 리뷰-수정 라운드를 반복했고, 때로는 20라운드를 넘긴 뒤 커밋을 squash하고 PR을 열고 스레드에 답글을 달아 resolve했습니다. Claude Code는 머지된 worktree와 브랜치를 정리하고, 머지되지 않은 커밋의 복구용 해시를 기록하고, 스케줄된 /nm-ticket 루프도 돌렸습니다. 자신의 수정이 만든 회귀, 서로 모순되는 리뷰 라운드, 다른 세션의 커밋을 실수로 push한 사건 한 번이 반복되는 마찰이었습니다.</div>
+        </div>
+      
+        <div class="project-area">
+          <div class="area-header">
+            <span class="area-name">테스트 품질, Mutation Testing &amp; QA 문서화</span>
+            <span class="area-count">~6개 세션</span>
+          </div>
+          <div class="area-desc">Claude는 Pitest mutation testing(약 770개 테스트 대상 2,500개 이상의 mutant)을 돌려 약하거나 의미 없는 테스트를 분류하고, 변경 범위를 테스트 코드로 한정해 이를 고쳤습니다. adb 재현 절차가 담긴 QA/개발용 테스트 케이스 스프레드시트, 코드와 Figma를 바탕으로 만든 화면·기능 명세 PDF, App Store 제출 준비 점검도 만들었습니다. 이 산출물들은 대상 독자, 정확도, 범위에 대해 사용자가 여러 번 바로잡아야 했고, App Store 관련 변경은 검증 스크립트에서 버그가 발견된 뒤 되돌려졌습니다.</div>
+        </div>
+
+    </div>
+    
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">무엇을 원했는가</div>
+        <div class="bar-row">
+        <div class="bar-label">코드 리뷰</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#2563eb"></div></div>
+        <div class="bar-value">15</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">리뷰 코멘트 대응</div>
+        <div class="bar-track"><div class="bar-fill" style="width:86.66666666666667%;background:#2563eb"></div></div>
+        <div class="bar-value">13</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">커밋 및 PR</div>
+        <div class="bar-track"><div class="bar-fill" style="width:40%;background:#2563eb"></div></div>
+        <div class="bar-value">6</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">디바이스 설치</div>
+        <div class="bar-track"><div class="bar-fill" style="width:26.666666666666668%;background:#2563eb"></div></div>
+        <div class="bar-value">4</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">코드 리뷰 반복</div>
+        <div class="bar-track"><div class="bar-fill" style="width:26.666666666666668%;background:#2563eb"></div></div>
+        <div class="bar-value">4</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">버그 수정</div>
+        <div class="bar-track"><div class="bar-fill" style="width:26.666666666666668%;background:#2563eb"></div></div>
+        <div class="bar-value">4</div>
+      </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">가장 많이 쓴 도구</div>
+        <div class="bar-row">
+        <div class="bar-label">Bash</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#0891b2"></div></div>
+        <div class="bar-value">5695</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">Edit</div>
+        <div class="bar-track"><div class="bar-fill" style="width:13.766461808604038%;background:#0891b2"></div></div>
+        <div class="bar-value">784</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">Read</div>
+        <div class="bar-track"><div class="bar-fill" style="width:8.059701492537313%;background:#0891b2"></div></div>
+        <div class="bar-value">459</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">Write</div>
+        <div class="bar-track"><div class="bar-fill" style="width:3.9508340649692713%;background:#0891b2"></div></div>
+        <div class="bar-value">225</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">ReadNotifications</div>
+        <div class="bar-track"><div class="bar-fill" style="width:2.054433713784021%;background:#0891b2"></div></div>
+        <div class="bar-value">117</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">Agent</div>
+        <div class="bar-track"><div class="bar-fill" style="width:2.019315188762072%;background:#0891b2"></div></div>
+        <div class="bar-value">115</div>
+      </div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">언어</div>
+        <div class="bar-row">
+        <div class="bar-label">Markdown</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#10b981"></div></div>
+        <div class="bar-value">235</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">TypeScript</div>
+        <div class="bar-track"><div class="bar-fill" style="width:42.12765957446808%;background:#10b981"></div></div>
+        <div class="bar-value">99</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">Python</div>
+        <div class="bar-track"><div class="bar-fill" style="width:26.80851063829787%;background:#10b981"></div></div>
+        <div class="bar-value">63</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">YAML</div>
+        <div class="bar-track"><div class="bar-fill" style="width:6.808510638297872%;background:#10b981"></div></div>
+        <div class="bar-value">16</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">Shell</div>
+        <div class="bar-track"><div class="bar-fill" style="width:4.680851063829787%;background:#10b981"></div></div>
+        <div class="bar-value">11</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">HTML</div>
+        <div class="bar-track"><div class="bar-fill" style="width:2.553191489361702%;background:#10b981"></div></div>
+        <div class="bar-value">6</div>
+      </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">세션 유형</div>
+        <div class="bar-row">
+        <div class="bar-label">멀티 태스크</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#8b5cf6"></div></div>
+        <div class="bar-value">20</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">반복 개선</div>
+        <div class="bar-track"><div class="bar-fill" style="width:75%;background:#8b5cf6"></div></div>
+        <div class="bar-value">15</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">단일 태스크</div>
+        <div class="bar-track"><div class="bar-fill" style="width:45%;background:#8b5cf6"></div></div>
+        <div class="bar-value">9</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">간단 질문</div>
+        <div class="bar-track"><div class="bar-fill" style="width:20%;background:#8b5cf6"></div></div>
+        <div class="bar-value">4</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">탐색</div>
+        <div class="bar-track"><div class="bar-fill" style="width:10%;background:#8b5cf6"></div></div>
+        <div class="bar-value">2</div>
+      </div>
+      </div>
+    </div>
+
+    
+    <h2 id="section-usage">Claude Code 사용 방식</h2>
+    <div class="narrative">
+      <p>당신은 <strong>한 단계씩 짝 프로그래밍하는 사람이 아니라 워크플로우 전체를 위임하는 사람</strong>으로 일합니다. 69개 세션에 걸친 약 998개 메시지에 비해 Bash 호출이 5,700회 가까이 된다는 것은, 프롬프트 하나가 보통 긴 자율 실행을 일으킨다는 뜻입니다. 요청은 최종 상태를 정한 계약서처럼 읽힙니다: &quot;프로젝트 전체를 단순화하고, 코멘트가 0이 될 때까지 로컬에서 리뷰하고, squash하고, PR을 열어.&quot; 그러면 Claude는 PR #9가 나가기까지 22라운드의 리뷰를 돌렸습니다. 모듈 그래프 경계 수정에도 같은 형태를 썼고(12라운드 후 PR #163), core/local 정리도 PR #161로 끝났습니다. <strong>0건이 될 때까지 리뷰하는 루프가 당신의 시그니처 패턴입니다.</strong> 이 루프는 /agent-review, worktree, Copilot 스레드 resolve로 돌아갑니다. 상위 목표가 code_review, PR 코멘트 대응, 커밋·PR 작업이라는 점은 시간 대부분이 기능을 처음부터 쓰는 데가 아니라 리뷰 사이클을 마무리하는 데 쓰인다는 것을 보여줍니다. 이 루프에는 당신이 감수하는 비용이 있습니다. Claude 자신의 수정이 회귀를 만들거나 이전 라운드와 모순되는 경우가 잦았는데, 라운드마다 새 코멘트를 부른 room-wait 코드와 왔다 갔다 한 konan 캐시 키가 그 예입니다. buggy_code와 wrong_approach가 마찰 1위로 동률(각 27건)인 이유도 여기서 일부 설명됩니다.</p>
+<p>실행 도중 끼어드는 일은 드물지만, 끼어들 때는 <strong>짧고 직설적이며 교정적</strong>입니다. 조용히 돌아가는 백그라운드 빌드 중에 보낸 &apos;루프 정지해&apos;, &apos;너 뭐하니?&apos; 같은 메시지가 그 예입니다. 교정은 <strong>코드 세부보다 범위와 전제</strong>에 맞춰져 있습니다. AGENTS.md 업데이트가 필요 없다고 했고, 별도 통합 PR 대신 PR #8의 대상 브랜치를 develop으로 바꾸면 된다고 짚었고, keychain 수정은 실제 사용자가 아니라 개발자에게만 영향이 있다고 지적했습니다. Claude가 잘못 잡은 사실 전제도 잡아냈습니다: 칩은 Qualcomm SoC가 아니라 Rockchip RK3527이었고, 통화 SDK에는 iOS 소비자가 있으며 음성 전용은 의도된 범위였습니다. 반대 방향도 자주 일어납니다. 당신의 질문 자체에 흔들리는 전제가 담긴 경우가 많았고 Claude가 이를 바로잡았습니다: Location은 API가 아니라 data class이고, GitHub &apos;로그인 오류&apos;는 실제로는 계정 정지였고, 재발신 버그 문서는 실제 원인보다 범위가 좁았습니다. 당신은 이런 교정을 마찰 없이 받아들입니다.</p>
+<p>당신의 작업은 <strong>실제 환경을 직접 다룹니다</strong>. iPhone XR에 빌드를 설치하고, non-GMS 하드웨어에서 adb 진단을 돌리고, 2대 디바이스 자동 통화 테스트를 하고, iPhone 통화 지연을 7–34초에서 0.5–1.8초로 줄이고, Maven Local과 패키지 레지스트리에 배포합니다. worktree·브랜치 정리, cron으로 도는 /nm-ticket 루프 같은 운영성 잡무도 Claude에 많이 맡깁니다. &quot;남은 결정 세 가지는 네가 내려&quot;나 &quot;push해&quot;처럼 넓은 권한을 주는 일도 잦습니다. 그 신뢰가 가끔 역효과를 냈습니다: Claude가 다른 세션의 커밋을 develop에 push했고, 결함 있는 검증 스크립트 때문에 App Store 작업 전체를 되돌렸습니다. 69개 세션에 기록된 1,310시간은 실제 타이핑 시간이라기보다 오래 열어 둔 세션이나 루프 세션을 반영할 가능성이 큽니다. <strong>당신의 실질적인 입력은 빈도는 낮고 레버리지는 큰 방향 지시입니다.</strong></p>
+      <div class="key-insight"><strong>핵심 패턴:</strong> 처음부터 끝까지의 결과 계약 — 특히 코멘트 0건이 될 때까지 수정 → 리뷰 → 수정을 반복하고 PR로 끝나는 루프 — 을 Claude에 넘기고, 궤도를 벗어날 때만 범위나 전제에 대한 짧은 교정으로 개입합니다.</div>
+    </div>
+    
+
+    <!-- Response Time Distribution -->
+    <div class="chart-card" style="margin: 24px 0;">
+      <div class="chart-title">사용자 응답 시간 분포</div>
+      <div class="bar-row">
+        <div class="bar-label">2-10초</div>
+        <div class="bar-track"><div class="bar-fill" style="width:18.181818181818183%;background:#6366f1"></div></div>
+        <div class="bar-value">32</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">10-30초</div>
+        <div class="bar-track"><div class="bar-fill" style="width:44.88636363636363%;background:#6366f1"></div></div>
+        <div class="bar-value">79</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">30초-1분</div>
+        <div class="bar-track"><div class="bar-fill" style="width:50.56818181818182%;background:#6366f1"></div></div>
+        <div class="bar-value">89</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">1-2분</div>
+        <div class="bar-track"><div class="bar-fill" style="width:57.38636363636363%;background:#6366f1"></div></div>
+        <div class="bar-value">101</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">2-5분</div>
+        <div class="bar-track"><div class="bar-fill" style="width:67.04545454545455%;background:#6366f1"></div></div>
+        <div class="bar-value">118</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">5-15분</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#6366f1"></div></div>
+        <div class="bar-value">176</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">15분 초과</div>
+        <div class="bar-track"><div class="bar-fill" style="width:72.72727272727273%;background:#6366f1"></div></div>
+        <div class="bar-value">128</div>
+      </div>
+      <div style="font-size: 12px; color: #64748b; margin-top: 8px;">
+        중앙값: 195.0초 &bull; 평균: 675.5초
+      </div>
+    </div>
+
+    <!-- Multi-clauding Section (matching Python reference) -->
+    <div class="chart-card" style="margin: 24px 0;">
+      <div class="chart-title">멀티 클로딩 (병렬 세션)</div>
+      
+        <div style="display: flex; gap: 24px; margin: 12px 0;">
+          <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: 700; color: #7c3aed;">42</div>
+            <div style="font-size: 11px; color: #64748b; text-transform: uppercase;">중첩 이벤트</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: 700; color: #7c3aed;">44</div>
+            <div style="font-size: 11px; color: #64748b; text-transform: uppercase;">관련 세션</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 24px; font-weight: 700; color: #7c3aed;">23%</div>
+            <div style="font-size: 11px; color: #64748b; text-transform: uppercase;">메시지 비율</div>
+          </div>
+        </div>
+        <p style="font-size: 13px; color: #475569; margin-top: 12px;">
+          여러 Claude Code 세션을 동시에 실행합니다. 멀티 클로딩은 세션들이 시간상 겹칠 때
+          감지되며, 병렬 워크플로우를 시사합니다.
+        </p>
+      
+    </div>
+
+    <!-- Time of Day & Tool Errors -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title" style="display: flex; align-items: center; gap: 12px;">
+          시간대별 사용자 메시지
+          <select id="timezone-select" style="font-size: 12px; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
+            <option value="0">태평양 (UTC-8)</option>
+            <option value="3">동부 (UTC-5)</option>
+            <option value="8">런던 (UTC)</option>
+            <option value="9">중부유럽 (UTC+1)</option>
+            <option value="17">도쿄 (UTC+9)</option>
+            <option value="custom">직접 입력...</option>
+          </select>
+          <input type="number" id="custom-offset" placeholder="UTC 오프셋" style="display: none; width: 80px; font-size: 12px; padding: 4px; border-radius: 4px; border: 1px solid #e2e8f0;">
+        </div>
+        <div id="hour-histogram">
+      <div class="bar-row">
+        <div class="bar-label">오전 (6-12)</div>
+        <div class="bar-track"><div class="bar-fill" style="width:70.6896551724138%;background:#8b5cf6"></div></div>
+        <div class="bar-value">369</div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">오후 (12-18)</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#8b5cf6"></div></div>
+        <div class="bar-value">522</div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">저녁 (18-24)</div>
+        <div class="bar-track"><div class="bar-fill" style="width:15.517241379310345%;background:#8b5cf6"></div></div>
+        <div class="bar-value">81</div>
+      </div>
+
+      <div class="bar-row">
+        <div class="bar-label">심야 (0-6)</div>
+        <div class="bar-track"><div class="bar-fill" style="width:4.980842911877394%;background:#8b5cf6"></div></div>
+        <div class="bar-value">26</div>
+      </div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">발생한 도구 오류</div>
+        <div class="bar-row">
+        <div class="bar-label">명령 실패</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#dc2626"></div></div>
+        <div class="bar-value">112</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">기타</div>
+        <div class="bar-track"><div class="bar-fill" style="width:45.535714285714285%;background:#dc2626"></div></div>
+        <div class="bar-value">51</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">사용자 거부</div>
+        <div class="bar-track"><div class="bar-fill" style="width:21.428571428571427%;background:#dc2626"></div></div>
+        <div class="bar-value">24</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">파일 변경됨</div>
+        <div class="bar-track"><div class="bar-fill" style="width:2.6785714285714284%;background:#dc2626"></div></div>
+        <div class="bar-value">3</div>
+      </div>
+      </div>
+    </div>
+
+    
+    <h2 id="section-wins">인상적인 작업들</h2>
+    <p class="section-intro">한 달 동안 69개 세션(998개 메시지, 227개 커밋)에서 당신은 Claude Code를 주로 Android, iOS, TypeScript 통화·메시징 스택 전반의 코드 리뷰, PR 코멘트 해결, 온디바이스 디버깅에 썼습니다.</p>
+    <div class="big-wins">
+      
+        <div class="big-win">
+          <div class="big-win-title">코멘트 0건까지 가는 리뷰 루프</div>
+          <div class="big-win-desc">&apos;코멘트가 0건이 될 때까지 로컬 리뷰와 수정을 반복&apos;이라는 명확한 종료 조건을 자주 정한 뒤, Claude에게 커밋 squash, PR 생성, 각 스레드 답글과 resolve까지 맡겼습니다. 이렇게 22라운드 리뷰 끝에 PR #9가, CI를 통과한 12라운드 끝에 PR #163이 나왔고, PR #22, #161, #51에서도 비슷한 결과가 나왔습니다. 작업을 별도 worktree에서 돌리고 끝난 뒤 머지된 브랜치를 정리한 덕분에 병렬 작업끼리 충돌하지 않았습니다. 다만 README push 한 번은 다른 세션의 커밋을 실수로 포함했습니다.</div>
+        </div>
+      
+        <div class="big-win">
+          <div class="big-win-title">Mutation testing으로 테스트 감사</div>
+          <div class="big-win-desc">커버리지를 테스트가 쓸모 있다는 증거로 보지 않았습니다. 대신 Claude에게 Pitest와 mutation 패스(한 번은 768개 테스트 대상 2,507개 mutant)를 돌려, 아무것도 잡아내지 못하거나 앱 코드를 전혀 건드리지 않는 테스트를 찾게 했습니다. 수정 단계는 테스트 코드로 한정했고, 결과는 더 강한 테스트와의 비교를 곁들인 공유 문서로 발행하게 했습니다. 그 결과 추측이 아니라 측정된 수치 — 실제로 약한 테스트 약 1% — 를 얻었습니다.</div>
+        </div>
+      
+        <div class="big-win">
+          <div class="big-win-title">로그 기반 디바이스 근본 원인 디버깅</div>
+          <div class="big-win-desc">까다로운 런타임 버그에서는 표면적인 수정에 머물지 않고 Claude에게 실제 디바이스 로그를 비교하게 했습니다. 그렇게 iPhone 발신 지연이 sliding sync를 깨뜨리던 1초 간격 sync v2 폴링 때문임을 찾아 지연을 7–34초에서 0.5–1.8초로 줄였습니다. 벨 미울림 버그는 js-sdk 위젯이 타임라인 state 이벤트를 무시하는 데서, 번호 생성 실패는 Matrix homeserver 대신 웹 호스트로 로그인하는 데서 원인을 찾았습니다. 당신의 질문은 Location vs. LocationManager, 재발신 버그의 범위처럼 전제를 자주 의심했고, 이것이 분석을 가정된 메커니즘이 아니라 실제 메커니즘에 붙잡아 두었습니다.</div>
+        </div>
+      
+    </div>
+    
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">가장 도움이 된 것 (Claude의 역량)</div>
+        <div class="bar-row">
+        <div class="bar-label">뛰어난 디버깅</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#16a34a"></div></div>
+        <div class="bar-value">16</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">다중 파일 수정</div>
+        <div class="bar-track"><div class="bar-fill" style="width:68.75%;background:#16a34a"></div></div>
+        <div class="bar-value">11</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">명확한 설명</div>
+        <div class="bar-track"><div class="bar-fill" style="width:56.25%;background:#16a34a"></div></div>
+        <div class="bar-value">9</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">능동적 지원</div>
+        <div class="bar-track"><div class="bar-fill" style="width:31.25%;background:#16a34a"></div></div>
+        <div class="bar-value">5</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">정확한 코드 수정</div>
+        <div class="bar-track"><div class="bar-fill" style="width:31.25%;background:#16a34a"></div></div>
+        <div class="bar-value">5</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">빠르고 정확한 검색</div>
+        <div class="bar-track"><div class="bar-fill" style="width:12.5%;background:#16a34a"></div></div>
+        <div class="bar-value">2</div>
+      </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">결과</div>
+        <div class="bar-row">
+        <div class="bar-label">부분 달성</div>
+        <div class="bar-track"><div class="bar-fill" style="width:39.130434782608695%;background:#8b5cf6"></div></div>
+        <div class="bar-value">9</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">대부분 달성</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#8b5cf6"></div></div>
+        <div class="bar-value">23</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">완전 달성</div>
+        <div class="bar-track"><div class="bar-fill" style="width:78.26086956521739%;background:#8b5cf6"></div></div>
+        <div class="bar-value">18</div>
+      </div>
+      </div>
+    </div>
+
+    
+    <h2 id="section-friction">문제가 생기는 지점</h2>
+    <p class="section-intro">마찰은 세 곳에 몰려 있습니다: Claude가 당신의 맥락을 확인하기 전에 잘못된 전제로 작업하는 것, 긴 리뷰-수정 루프에서 자신의 수정이 회귀를 만드는 것, 병렬 작업이 남긴 git·브랜치·세션 상태에서 생기는 부작용입니다.</p>
+    <div class="friction-categories">
+      
+        <div class="friction-category">
+          <div class="friction-title">검증되지 않은 전제 위에 세운 권고</div>
+          <div class="friction-desc">Claude는 실제 환경이 아니라 하드웨어, 소비자, 의도된 범위에 대한 일반적인 가정으로 첫 답을 내는 일이 잦았고, 당신이 이를 바로잡아야 했습니다. 요청에 제약 조건(SoC, 소비 플랫폼, 의도적인 범위 제한, 대상 독자)을 넣으면 이런 라운드가 줄어듭니다. 권고하기 전에 가정을 먼저 나열하라고 요청하는 것도 도움이 됩니다.</div>
+          <ul class="friction-examples"><li>DSP 대체 분석에서 Claude는 Qualcomm이나 MediaTek SoC를 가정하고 통합 오디오 DSP와 HAL 튜닝을 권했습니다. 칩이 Rockchip RK3527이라고 알려 준 뒤 이를 철회하고 분석을 처음부터 다시 해야 했습니다.</li><li>통화 SDK 설계 평가에서 Claude는 Private Phone을 유일한 소비자로 보고 iOS를 무시했으며, 음성 전용 지원이 의도된 범위인데도 감점했습니다. 당신은 두 번 바로잡은 뒤 순수하게 기술적인 재평가를 요청했습니다.</li></ul>
+        </div>
+      
+        <div class="friction-category">
+          <div class="friction-title">리뷰-수정 루프의 회귀와 서로 모순되는 피드백</div>
+          <div class="friction-desc">코멘트 0건까지 리뷰를 반복하는 루프(때로는 11~22라운드)는 Claude 자신의 수정이 새 지적이나 회귀를 만들면서 길어지는 경우가 많았습니다. 수정을 적용하기 전에 테스트로 영향 범위를 확인하게 하면 도움이 됩니다. 이미 내린 결정(예: &quot;교체하지 말 것&quot;)을 AGENTS.md나 PR 설명에 적어 두면 이후 라운드가 그것을 다시 열지 않습니다.</div>
+          <ul class="friction-examples"><li>iPhone 발신 지연 작업에서 Claude가 추가한 room-wait 코드는 라운드마다 새 지적을 낳았고 당신의 &quot;교체하지 말 것&quot; 결정과도 충돌해 되돌려야 했습니다. 상한을 없앤 수정은 오프라인 경로까지 무제한으로 만들어 추가 수정이 필요했습니다.</li><li>/simplify 작업에서는 konan 캐시 키와 CallScreenColors를 두고 리뷰 라운드끼리 모순돼 반복이 늘었습니다. PR #22 작업에서는 Claude 자신의 수정이 도중에 회귀를 일으켰습니다.</li></ul>
+        </div>
+      
+        <div class="friction-category">
+          <div class="friction-title">병렬 세션 간 Git·작업 공간 상태 충돌</div>
+          <div class="friction-desc">당신은 많은 세션, worktree, 브랜치를 병렬로 돌리는데, Claude는 가끔 다른 세션이 남긴 것을 확인하지 않고 커밋을 push하거나 그 변경 위에서 작업했습니다. push나 커밋 전에 `git log origin/&lt;branch&gt;..HEAD`와 `git status`를 확인하라는 규칙을 AGENTS.md에 두면 이런 사고 대부분을 막을 수 있습니다.</div>
+          <ul class="friction-examples"><li>README를 develop에 push하면서 다른 세션의 MatrixRTC 명세 커밋까지 함께 push해, 이력에 revert 커밋이 남았습니다.</li><li>커밋/PR 요청이 알고 보니 이미 PR #8로 머지된 작업의 중간 버전이었고, 이는 develop을 fetch하다 충돌이 난 뒤에야 드러났습니다. createModuleGraph 진단에서는 충돌하는 작업 트리 변경 때문에 수정을 끝내기 전에 흐름이 끊겼습니다.</li></ul>
+        </div>
+      
+    </div>
+    
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">주요 마찰 유형</div>
+        <div class="bar-row">
+        <div class="bar-label">버그 있는 코드</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#dc2626"></div></div>
+        <div class="bar-value">27</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">잘못된 접근</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#dc2626"></div></div>
+        <div class="bar-value">27</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">요청 오해</div>
+        <div class="bar-track"><div class="bar-fill" style="width:59.25925925925925%;background:#dc2626"></div></div>
+        <div class="bar-value">16</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">과도한 변경</div>
+        <div class="bar-track"><div class="bar-fill" style="width:18.51851851851852%;background:#dc2626"></div></div>
+        <div class="bar-value">5</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">사용자가 거부한 작업</div>
+        <div class="bar-track"><div class="bar-fill" style="width:11.11111111111111%;background:#dc2626"></div></div>
+        <div class="bar-value">3</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">환경 문제</div>
+        <div class="bar-track"><div class="bar-fill" style="width:11.11111111111111%;background:#dc2626"></div></div>
+        <div class="bar-value">3</div>
+      </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">추정 만족도 (모델 추정)</div>
+        <div class="bar-row">
+        <div class="bar-label">불만 심함</div>
+        <div class="bar-track"><div class="bar-fill" style="width:1.342281879194631%;background:#eab308"></div></div>
+        <div class="bar-value">2</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">불만족</div>
+        <div class="bar-track"><div class="bar-fill" style="width:18.79194630872483%;background:#eab308"></div></div>
+        <div class="bar-value">28</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">만족 추정</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:#eab308"></div></div>
+        <div class="bar-value">149</div>
+      </div>
+<div class="bar-row">
+        <div class="bar-label">만족</div>
+        <div class="bar-track"><div class="bar-fill" style="width:0.6711409395973155%;background:#eab308"></div></div>
+        <div class="bar-value">1</div>
+      </div>
+      </div>
+    </div>
+
+    
+    
+    <h2 id="section-features">시도해볼 기존 CC 기능</h2>
+    <div class="claude-md-section">
+      <h3>CLAUDE.md 추가 제안</h3>
+      <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">아래 내용을 Claude Code에 붙여넣으면 CLAUDE.md에 추가됩니다.</p>
+      <div class="claude-md-actions">
+        <button class="copy-all-btn" onclick="copyAllCheckedClaudeMd()">선택 항목 전체 복사</button>
+      </div>
+      
+        <div class="claude-md-item">
+          <input type="checkbox" id="cmd-0" class="cmd-checkbox" checked data-text="CLAUDE.md(또는 AGENTS.md) 상단, 워크플로우 섹션들보다 위에 새 '## Git 안전 수칙' 섹션을 만드세요.\n\n## Git 안전 수칙
+- `git push` 전에는 항상 `git fetch`와 `git log --oneline origin/&lt;branch&gt;..HEAD`를 실행하세요. 나열된 커밋이 모두 이 세션에서 이 작업을 위해 만든 것일 때만 push하세요. 낯선 커밋(예: 병렬 세션이나 다른 worktree에서 온 커밋)이 있으면 멈추고 push 전에 사용자에게 물어보세요.
+- 커밋하거나 PR을 열기 전에 `git fetch origin develop`을 실행하고, 같은 변경이 이미 upstream에 머지됐는지 확인하세요(`git diff origin/develop -- &lt;files&gt;`).">
+          <label for="cmd-0">
+            <code class="cmd-code">## Git 안전 수칙
+- `git push` 전에는 항상 `git fetch`와 `git log --oneline origin/&lt;branch&gt;..HEAD`를 실행하세요. 나열된 커밋이 모두 이 세션에서 이 작업을 위해 만든 것일 때만 push하세요. 낯선 커밋(예: 병렬 세션이나 다른 worktree에서 온 커밋)이 있으면 멈추고 push 전에 사용자에게 물어보세요.
+- 커밋하거나 PR을 열기 전에 `git fetch origin develop`을 실행하고, 같은 변경이 이미 upstream에 머지됐는지 확인하세요(`git diff origin/develop -- &lt;files&gt;`).</code>
+            <button class="copy-btn" onclick="copyCmdItem(0)">복사</button>
+          </label>
+          <div class="cmd-why">한 세션에서 Claude가 다른 세션의 MatrixRTC 커밋을 develop에 push해 revert가 필요했습니다. 다른 세션에서는 커밋/PR 대상이 이미 PR #8로 머지돼 있었는데, 충돌이 난 뒤에야 드러났습니다.</div>
+        </div>
+      
+        <div class="claude-md-item">
+          <input type="checkbox" id="cmd-1" class="cmd-checkbox" checked data-text="기존 /agent-review나 PR 워크플로우 문서 근처에 새 '## 리뷰-수정 루프 규칙' 섹션으로 추가하세요.\n\n## 리뷰-수정 루프 규칙
+- 루프 동안 `.claude/review-decisions.md`에 결정 로그를 유지하세요. 수용하거나 기각한 리뷰 항목마다 이유와 사용자 결정을 기록하세요.
+- 앞서 되돌렸거나 사용자가 거부한 코드나 접근 방식은, 이후 리뷰 라운드가 제안하더라도 다시 도입하지 마세요.
+- konan 캐시 키와 CallScreenColors 때처럼 두 라운드가 서로 모순되면, 왔다 갔다 하지 말고 멈춰서 사용자에게 물어보세요.
+- 수정이 동작 범위를 넓힐 때(예: 상한 제거)는 커밋 전에 오프라인·오류 경로를 포함해 영향받는 모든 코드 경로를 확인하세요.
+- 각 라운드가 끝나면 라운드 번호와 남은 코멘트 수를 보고하세요.">
+          <label for="cmd-1">
+            <code class="cmd-code">## 리뷰-수정 루프 규칙
+- 루프 동안 `.claude/review-decisions.md`에 결정 로그를 유지하세요. 수용하거나 기각한 리뷰 항목마다 이유와 사용자 결정을 기록하세요.
+- 앞서 되돌렸거나 사용자가 거부한 코드나 접근 방식은, 이후 리뷰 라운드가 제안하더라도 다시 도입하지 마세요.
+- konan 캐시 키와 CallScreenColors 때처럼 두 라운드가 서로 모순되면, 왔다 갔다 하지 말고 멈춰서 사용자에게 물어보세요.
+- 수정이 동작 범위를 넓힐 때(예: 상한 제거)는 커밋 전에 오프라인·오류 경로를 포함해 영향받는 모든 코드 경로를 확인하세요.
+- 각 라운드가 끝나면 라운드 번호와 남은 코멘트 수를 보고하세요.</code>
+            <button class="copy-btn" onclick="copyCmdItem(1)">복사</button>
+          </label>
+          <div class="cmd-why">코멘트 0건까지 가는 리뷰 루프가 약 10개 세션에 나타나고, 일부는 11~22라운드까지 갔습니다. 라운드끼리 모순됐고, Claude 자신의 수정이 무제한 오프라인 재시도나 사용자의 &apos;교체하지 말 것&apos; 결정에 어긋난 room-wait 코드 같은 회귀를 만들었습니다.</div>
+        </div>
+      
+        <div class="claude-md-item">
+          <input type="checkbox" id="cmd-2" class="cmd-checkbox" checked data-text="'## 환경' 또는 '## 도구' 섹션 아래에 추가하세요.\n\n## 환경 (macOS)
+- GNU `timeout`은 없습니다. `gtimeout`(coreutils)이나 `perl -e &apos;alarm shift; exec @ARGV&apos; &lt;sec&gt; &lt;cmd&gt;`를 쓰세요.
+- 백그라운드에서 약 2분 넘게 걸리는 빌드나 테스트는 최소 몇 분마다 짧은 진행 상황(현재 단계, 경과 시간)을 알리세요.
+- `&lt;...&gt;`나 `TODO` 같은 placeholder 텍스트가 남아 있는 명령이나 서브에이전트 프롬프트는 절대 보내지 마세요.">
+          <label for="cmd-2">
+            <code class="cmd-code">## 환경 (macOS)
+- GNU `timeout`은 없습니다. `gtimeout`(coreutils)이나 `perl -e &apos;alarm shift; exec @ARGV&apos; &lt;sec&gt; &lt;cmd&gt;`를 쓰세요.
+- 백그라운드에서 약 2분 넘게 걸리는 빌드나 테스트는 최소 몇 분마다 짧은 진행 상황(현재 단계, 경과 시간)을 알리세요.
+- `&lt;...&gt;`나 `TODO` 같은 placeholder 텍스트가 남아 있는 명령이나 서브에이전트 프롬프트는 절대 보내지 마세요.</code>
+            <button class="copy-btn" onclick="copyCmdItem(2)">복사</button>
+          </label>
+          <div class="cmd-why">macOS에 `timeout`이 없어 명령이 실패했습니다. 잘못된 형식의 명령과 placeholder가 채워지지 않은 서브에이전트 프롬프트가 전송됐습니다. 오래 말없이 돌아가는 빌드에 사용자가 &apos;너 뭐하니?&apos;라고 물었습니다.</div>
+        </div>
+      
+        <div class="claude-md-item">
+          <input type="checkbox" id="cmd-3" class="cmd-checkbox" checked data-text="'## 작업 합의' 섹션 아래에 추가하세요.\n\n## 범위 규율
+- 작업이 반복 가능한 새 워크플로우를 도입하거나 사용자가 요청하지 않는 한, AGENTS.md나 CLAUDE.md를 수정하거나 별도 PR·브랜치를 제안하지 마세요.
+- 이슈를 고치기 전에 실제로 누가 영향을 받는지(최종 사용자 vs. 여러 빌드를 설치한 개발자) 밝히세요. 요청이 없으면 개발자에게만 해당하는 엣지 케이스는 건너뛰세요.
+- 사용자가 &apos;프로젝트 전체&apos;라고 하면 범위를 브랜치 diff로 좁히지 마세요.">
+          <label for="cmd-3">
+            <code class="cmd-code">## 범위 규율
+- 작업이 반복 가능한 새 워크플로우를 도입하거나 사용자가 요청하지 않는 한, AGENTS.md나 CLAUDE.md를 수정하거나 별도 PR·브랜치를 제안하지 마세요.
+- 이슈를 고치기 전에 실제로 누가 영향을 받는지(최종 사용자 vs. 여러 빌드를 설치한 개발자) 밝히세요. 요청이 없으면 개발자에게만 해당하는 엣지 케이스는 건너뛰세요.
+- 사용자가 &apos;프로젝트 전체&apos;라고 하면 범위를 브랜치 diff로 좁히지 마세요.</code>
+            <button class="copy-btn" onclick="copyCmdItem(3)">복사</button>
+          </label>
+          <div class="cmd-why">사용자가 불필요한 AGENTS.md 업데이트와 별도 통합 PR을 거부했습니다. 개발자에게만 영향이 있는 keychain 수정도 중단시켰습니다. 다른 세션에서는 /simplify의 범위를 브랜치 diff에서 프로젝트 전체로 사용자가 직접 돌려놓아야 했습니다.</div>
+        </div>
+      
+        <div class="claude-md-item">
+          <input type="checkbox" id="cmd-4" class="cmd-checkbox" checked data-text="Android 리포 CLAUDE.md의 '## 빌드 메모' 또는 '## Gradle' 아래에 추가하세요.\n\n## 빌드 메모
+- modulegraph 플러그인(0.15.0+)은 project 플러그인이 아니라 `settings.gradle.kts`의 settings 플러그인으로 적용해야 합니다. project 플러그인으로 적용하면 빈 그래프가 나오거나 `createModuleGraph`가 실패합니다.">
+          <label for="cmd-4">
+            <code class="cmd-code">## 빌드 메모
+- modulegraph 플러그인(0.15.0+)은 project 플러그인이 아니라 `settings.gradle.kts`의 settings 플러그인으로 적용해야 합니다. project 플러그인으로 적용하면 빈 그래프가 나오거나 `createModuleGraph`가 실패합니다.</code>
+            <button class="copy-btn" onclick="copyCmdItem(4)">복사</button>
+          </label>
+          <div class="cmd-why">서로 다른 두 세션이 같은 modulegraph settings 플러그인 근본 원인을 다시 찾아내느라 상당한 시간을 썼습니다.</div>
+        </div>
+      
+    </div>
+    
+    
+    <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">아래 내용을 Claude Code에 붙여넣으면 알아서 설정해줍니다.</p>
+    <div class="features-section">
+      
+        <div class="feature-card">
+          <div class="feature-title">커스텀 스킬</div>
+          <div class="feature-oneliner">반복되는 여러 단계 워크플로우를 고정된 규칙을 가진 /명령 하나로 만드세요.</div>
+          <div class="feature-why"><strong>왜 필요한가:</strong> 상위 목표가 code_review, address_pr_review_comments, commit_and_pr입니다. worktree·브랜치 정리가 3개 세션, 디바이스 설치가 4개 세션에 나왔습니다. 이들은 자유 형식 프롬프트로 실행돼, 머지되지 않은 커밋 확인이나 복구용 해시 기록 같은 동작이 매번 달랐습니다. nm-ticket은 스킬이 아니라 command로 저장돼 있었으니, 기존 워크플로우가 실제로 어디에 있는지 확인해 보세요.</div>
+          
+          <div class="feature-examples">
+            <div class="feature-example">
+              <div class="example-code-row">
+                <code class="example-code">mkdir -p .claude/skills/cleanup-worktrees &amp;&amp; cat &gt; .claude/skills/cleanup-worktrees/SKILL.md &lt;&lt;&apos;EOF&apos;
+---
+name: cleanup-worktrees
+description: 머지된 worktree와 브랜치를 안전하게 제거한다
+---
+1. git fetch --prune
+2. 각 worktree와 로컬 브랜치에 대해 `git log origin/develop..&lt;branch&gt;`를 확인한다.
+3. 머지된 항목과 머지되지 않은 커밋이 있는 항목을 따로 나열하고, 머지되지 않은 커밋이 있는 모든 브랜치의 HEAD 해시를 기록한다.
+4. 확인을 받은 뒤 머지된 항목만 삭제한다(머지되지 않은 항목은 명시적 승인이 있을 때만).
+5. 마지막에 복구용 해시를 출력한다.
+EOF</code>
+                <button class="copy-btn" onclick="copyText(this)">복사</button>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      
+        <div class="feature-card">
+          <div class="feature-title">Hooks</div>
+          <div class="feature-oneliner">git push 같은 특정 도구 호출 전에 가드 스크립트를 자동으로 실행합니다.</div>
+          <div class="feature-why"><strong>왜 필요한가:</strong> develop에 엉뚱한 커밋을 push한 일이 이미 한 번 있었고, 당신은 많은 세션과 worktree를 병렬로 돌립니다. PreToolUse hook이 push될 커밋을 보여 주면, 남의 커밋이 원격에 닿기 전에 잡을 수 있습니다.</div>
+          
+          <div class="feature-examples">
+            <div class="feature-example">
+              <div class="example-code-row">
+                <code class="example-code">// .claude/settings.json
+{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;$CLAUDE_PROJECT_DIR/.claude/hooks/pre-push-check.sh&quot; }
+        ]
+      }
+    ]
+  }
+}
+
+# .claude/hooks/pre-push-check.sh
+#!/bin/bash
+cmd=$(jq -r &apos;.tool_input.command&apos;)
+if echo &quot;$cmd&quot; | grep -q &apos;git push&apos;; then
+  git fetch -q
+  echo &apos;Commits to be pushed:&apos; &gt;&amp;2
+  git log --oneline @{u}..HEAD &gt;&amp;2 2&gt;/dev/null
+fi
+exit 0</code>
+                <button class="copy-btn" onclick="copyText(this)">복사</button>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      
+        <div class="feature-card">
+          <div class="feature-title">헤드리스 모드</div>
+          <div class="feature-oneliner">대화형 세션을 루프로 붙잡아 두는 대신 cron이나 CI에서 Claude를 비대화형으로 실행합니다.</div>
+          <div class="feature-why"><strong>왜 필요한가:</strong> 매시간 돌던 /nm-ticket 루프는 대화형 세션 안에서 실행됐고, 어느 실행에서도 처리할 거리를 찾지 못했습니다. cron이나 CI에서 헤드리스로 돌리면 그런 빈 폴링이 대화형 세션 밖으로 빠지고, 세션 내 cron 작업보다 스케줄 관리도 쉬워집니다.</div>
+          
+          <div class="feature-examples">
+            <div class="feature-example">
+              <div class="example-code-row">
+                <code class="example-code"># crontab -e
+0 * * * * cd ~/work/private-phone &amp;&amp; claude -p &quot;/nm-ticket: 열린 PR의 미해결 스레드와 할당된 티켓을 확인하고, 처리할 거리가 있을 때만 보고하세요&quot; --allowedTools &quot;Bash,Read,Grep&quot; &gt;&gt; ~/.claude/nm-ticket.log 2&gt;&amp;1</code>
+                <button class="copy-btn" onclick="copyText(this)">복사</button>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      
+    </div>
+    
+    
+    <h2 id="section-patterns">Claude Code의 새로운 사용법</h2>
+    <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">아래 내용을 Claude Code에 붙여넣으면 단계별로 안내해줍니다.</p>
+    <div class="patterns-section">
+      
+        <div class="pattern-card">
+          <div class="pattern-title">리뷰 루프에 상한과 종료 조건 두기</div>
+          <div class="pattern-summary">라운드 제한 없는 &apos;코멘트 0건까지 반복&apos;은 11~22라운드짜리 세션으로 이어졌고, 그중 여러 세션은 루프가 끝나기 전에 종료됐습니다.</div>
+          <div class="pattern-detail">라운드마다 새로 리뷰해서 직전 라운드와 모순될 수 있다면, 코멘트 0건은 안정적인 목표가 아닙니다. 당신의 세션에서는 뒤 라운드가 앞선 결정을 뒤집었고, Claude 자신의 수정이 새 코멘트를 만들었습니다. 5라운드 같은 상한과 모순 시 질문한다는 규칙이 있었다면 이 루프들은 요약과 함께 더 일찍 끝났을 것입니다. 루프 도중 사용 한도에 걸린 세션들도 더 작고 제한된 라운드가 필요하다는 근거입니다.</div>
+          
+          <div class="copyable-prompt-section">
+            <div class="prompt-label">Claude Code에 붙여넣기:</div>
+            <div class="copyable-prompt-row">
+              <code class="copyable-prompt">이 브랜치에 /agent-review를 최대 5라운드까지 실행하세요. .claude/review-decisions.md에 결정 로그를 유지하세요. critical/major 항목만 고치고 minor 항목은 목록으로만 남기세요. 어떤 라운드가 이전 결정과 모순되면 멈추고 저에게 물어보세요. 마지막 라운드 후에는 무엇이 남았고 왜 남았는지 요약하세요.</code>
+              <button class="copy-btn" onclick="copyText(this)">복사</button>
+            </div>
+          </div>
+          
+        </div>
+      
+        <div class="pattern-card">
+          <div class="pattern-title">하드웨어와 소비자에 대한 사실을 먼저 밝히기</div>
+          <div class="pattern-summary">여러 분석 세션에서 전제를 바로잡아야 했는데, 2~3줄짜리 맥락 블록이면 막을 수 있었습니다.</div>
+          <div class="pattern-detail">DSP 실현 가능성 답변은 당신이 RK3527이라고 말하기 전까지 Qualcomm이나 MediaTek SoC를 가정했습니다. SDK 평가는 iOS 소비자를 무시했고 의도된 음성 전용 범위를 감점했습니다. QA 문서는 대상 독자와 기준 커밋을 바로잡아야 했습니다. 매번 Claude는 빈 곳을 기본 가정으로 채웠습니다. 답하기 전에 가정을 나열하라고 하면 이런 문제가 일찍 드러납니다.</div>
+          
+          <div class="copyable-prompt-section">
+            <div class="prompt-label">Claude Code에 붙여넣기:</div>
+            <div class="copyable-prompt-row">
+              <code class="copyable-prompt">답하기 전에 지금 깔고 있는 가정(플랫폼/SoC, 이 코드의 소비자, 의도된 범위, 대상 독자, 기준 커밋)을 나열하세요. 제가 확인할 때까지 기다린 뒤 분석을 제시하세요.</code>
+              <button class="copy-btn" onclick="copyText(this)">복사</button>
+            </div>
+          </div>
+          
+        </div>
+      
+        <div class="pattern-card">
+          <div class="pattern-title">수정을 제안하기 전에 증거로 진단하기</div>
+          <div class="pattern-summary">로그를 먼저 확보한 세션(logcat, 디바이스 진단)은 잘 끝났고, 코드만 보고 가설을 세운 세션은 부분 달성에 머물렀습니다.</div>
+          <div class="pattern-detail">번호 생성 버그, iOS 발신 지연, GPS 질문은 Claude가 logcat, 로그 비교, adb 진단을 썼기 때문에 해결됐습니다. 재실행 시 로그인이 풀리는 문제와 AppKit 크래시 세션은 근본 스택 트레이스나 디바이스 로그를 끝내 확보하지 못해 확인되지 않은 채 끝났습니다. 간헐적인 버그는 Claude가 먼저 로깅을 추가하거나 캡처 단계를 준비하게 한 뒤, 재현하고, 그다음에 고치게 하세요.</div>
+          
+          <div class="copyable-prompt-section">
+            <div class="prompt-label">Claude Code에 붙여넣기:</div>
+            <div class="copyable-prompt-row">
+              <code class="copyable-prompt">아직 앱 코드는 바꾸지 마세요. 먼저 근본 원인을 확인하려면 정확히 어떤 로그나 스택 트레이스가 필요한지 알려 주고, 필요하면 임시 로깅을 추가하고, 그것을 캡처할 adb/xcrun 명령을 주세요. 수정은 로그로 가설이 확인된 뒤에만 진행합니다.</code>
+              <button class="copy-btn" onclick="copyText(this)">복사</button>
+            </div>
+          </div>
+          
+        </div>
+      
+        <div class="pattern-card">
+          <div class="pattern-title">사용량 지표는 신중하게 읽기</div>
+          <div class="pattern-summary">69개 세션의 &apos;1310시간&apos;은 실제 작업 시간이 아니므로 노력의 척도로 쓰지 마세요.</div>
+          <div class="pattern-detail">세션당 평균 약 19시간인데, 열어 둔 채 방치한 세션, 매시간 도는 cron 루프, 긴 백그라운드 빌드가 포함됐을 가능성이 큽니다. 또 &apos;USER INSTRUCTIONS: None captured&apos;는 당신이 지시를 반복한 적이 없다는 뜻이 아닙니다. 위의 CLAUDE.md 제안은 포착된 반복 지시가 아니라 반복된 마찰에서 추론한 것이니, 채택하기 전에 실제 습관과 대조해 보세요.</div>
+          
+          <div class="copyable-prompt-section">
+            <div class="prompt-label">Claude Code에 붙여넣기:</div>
+            <div class="copyable-prompt-row">
+              <code class="copyable-prompt">이 리포에서 최근 10개 세션의 트랜스크립트를 보고, 제가 Claude에게 두 번 이상 준 지시(예: 리뷰 규칙, push 규칙, 범위 규칙)를 나열하세요. 그런 지시에 대해서만 CLAUDE.md 문구를 제안하고, 적용하기 전에 diff를 보여 주세요.</code>
+              <button class="copy-btn" onclick="copyText(this)">복사</button>
+            </div>
+          </div>
+          
+        </div>
+      
+    </div>
+    
+    
+
+    
+    <h2 id="section-horizon">앞으로의 가능성</h2>
+    <p class="section-intro">이미 PR 리뷰 루프, mutation testing 감사, 디바이스 진단을 돌리고 있습니다. 다음 단계는 이렇게 사람이 지켜보는 루프를, 반복되는 주관적 리뷰 라운드가 아니라 테스트·mutation 점수·디바이스 로그 같은 객관적 신호를 기준으로 수렴하는 관문형 병렬 파이프라인으로 바꾸는 것입니다.</p>
+    <div class="horizon-section">
+      
+        <div class="horizon-card">
+          <div class="horizon-title">실제로 수렴하는 테스트 관문형 리뷰 루프</div>
+          <div class="horizon-possible">코멘트 0건까지 가는 리뷰 세션은 11~22라운드까지 가는 일이 잦았습니다. 리뷰어가 이전 라운드와 모순됐고, Claude 자신의 수정이 room-wait 코드, 무제한 오프라인 경로, 크기 회귀 같은 회귀를 만들었습니다. 관문형 루프는 1라운드에서 리뷰 기준과 결정 로그를 고정합니다. 병렬 리뷰어 서브에이전트(정확성, 아키텍처, 테스트)는 그 로그와 모순되지 않는 지적만 올립니다. 수정은 전체 테스트 스위트와 변경된 라인 대상 mutation 검사를 통과해야만 수용됩니다. 리뷰 코멘트, 테스트 실패, 새로 살아남은 mutant가 모두 0이 되면 루프가 끝나므로, 끝났는지 사람이 판단할 필요가 없습니다.</div>
+          <div class="horizon-tip"><strong>시작하기:</strong> 기존 /agent-review를 Agent 도구로 병렬 실행하는 커스텀 슬래시 명령이나 스킬을 쓰세요. 매 Edit 후에 Gradle/Jest 테스트와 변경된 클래스로 범위를 좁힌 Pitest(targetClasses)를 돌리는 PostToolUse hook을 추가하세요. 결정은 worktree 안의 DECISIONS.md에 남기세요.</div>
+          <div class="pattern-prompt"><div class="prompt-label">Claude Code에 붙여넣기:</div><code>이 브랜치용 새 git worktree에서 관문형 리뷰 루프를 실행하세요. 0라운드: 범위, 명시적 비목표, 이 대화에서 제가 내린 모든 결정(예: &apos;X는 교체하지 말 것&apos;)을 기록한 DECISIONS.md를 만드세요. 매 라운드: (1) 병렬 리뷰 서브에이전트 셋(정확성/회귀, CLAUDE.md/AGENTS.md 기준 아키텍처/컨벤션, 테스트 적절성)을 띄우세요. 각 서브에이전트는 DECISIONS.md를 읽고 그와 모순되는 지적은 버려야 합니다. (2) 남은 지적마다 실패하는 테스트를 먼저 쓰고, 그다음 최소한의 수정을 하세요. (3) 전체 유닛 테스트 스위트와 변경된 클래스로 범위를 좁힌 Pitest를 실행하세요. 테스트를 깨뜨리거나 변경된 라인에 살아남는 mutant를 추가하는 수정은 되돌리세요. (4) 라운드 요약(지적, 수정, 기각과 이유)을 REVIEW_LOG.md에 덧붙이세요. 수용된 지적이 0건인 라운드가 나오고, 테스트가 통과하고, 변경된 라인에 새로 살아남은 mutant가 없으면 멈추세요. 같은 파일을 3라운드 연속으로 건드리면 진동 신호이니 멈추고 저에게 물어보세요. push 전에는 `git log origin/&lt;branch&gt;..HEAD`를 실행해 모든 커밋이 이 작업 소속인지 확인하고, 다른 세션의 커밋은 절대 push하지 마세요. 마지막으로 논리 단위 커밋으로 squash하고 PR을 여세요.</code><button class="copy-btn" onclick="copyText(this)">복사</button></div>
+        </div>
+      
+        <div class="horizon-card">
+          <div class="horizon-title">자율 병렬 PR 코멘트 해결 함대</div>
+          <div class="horizon-possible">PR 코멘트 처리(address_pr_review_comments, apply_review_feedback, code_review_iteration)는 가장 빈번한 목표 그룹이고, 매시간 도는 /nm-ticket 루프는 이미 할 일을 폴링하고 있습니다. 스케줄된 오케스트레이터가 iOS, Android, SDK 리포의 열린 PR마다 서브에이전트를 하나씩, 각자의 worktree에서 띄울 수 있습니다. 각 에이전트는 코멘트마다 실패하는 테스트를 쓰고, 고치고, push가 거부되면 원격 변경을 머지하고, 답글을 달고, 스레드를 resolve합니다. 제품 결정이 필요한 코멘트는 추측하지 않고 아침 다이제스트로 올립니다. 당신은 라운드마다 직접 운전하는 대신 요약만 검토하면 됩니다.</div>
+          <div class="horizon-tip"><strong>시작하기:</strong> Claude Code를 cron이나 GitHub Actions 스케줄에서 헤드리스(`claude -p`)로 실행하고, 스레드 답글에는 gh CLI를, resolve에는 GraphQL resolveReviewThread mutation을 쓰세요. PR 간 병렬화에는 Agent 도구를 쓰고, 오케스트레이터가 호출할 수 있도록 nm-ticket을 command에서 스킬로 승격하세요.</div>
+          <div class="pattern-prompt"><div class="prompt-label">Claude Code에 붙여넣기:</div><code>PR 코멘트 오케스트레이터로 동작하세요. 다음 리포들에서 제가 작성한 열린 PR을 모두 나열하세요: &lt;repo list&gt;. 미해결 리뷰 스레드가 있는 PR마다 새 git worktree에서 작업하는 별도 서브에이전트를 띄우세요. 각 서브에이전트는 반드시: (1) 각 스레드를 code-fix, explain-only, needs-human-decision으로 분류하고; (2) code-fix는 리뷰어의 우려를 재현하는 실패 테스트를 쓰고, 수정을 구현하고, 전체 테스트 스위트를 실행하고; (3) explain-only는 코드나 파일 라인을 인용한 답글 초안을 쓰고; (4) needs-human-decision은 아무것도 바꾸지 않고 해당 스레드를 ESCALATIONS.md에 추가하고; (5) push 전에 원격 브랜치를 fetch해 머지하고, 테스트를 다시 돌리고, `git log`로 자기 커밋만 push되는지 확인하고; (6) 처리한 스레드에 gh로 답글을 달고 resolve하세요. 스레드가 명시적으로 요구하지 않는 한 AGENTS.md/CLAUDE.md를 수정하거나 별도 PR을 열지 마세요. 모든 서브에이전트가 끝나면 PR, 수정한 스레드, 설명한 스레드, 에스컬레이션한 스레드, 테스트 상태를 담은 표 하나를 주세요. 끝난 뒤 worktree를 정리하세요.</code><button class="copy-btn" onclick="copyText(this)">복사</button></div>
+        </div>
+      
+        <div class="horizon-card">
+          <div class="horizon-title">디바이스 연동(device-in-the-loop) 통화 회귀 하네스</div>
+          <div class="horizon-possible">가장 가치 있었던 디버깅은 실제 디바이스에서 나왔습니다: sliding sync를 깨뜨린 sync v2 폴링(7-34초에서 0.5-1.8초로), 위젯 타임라인 상태 때문에 생긴 iOS 벨 미울림, 재발신 벨 미울림, 그리고 사람이 개입하는 바람에 결과를 버려야 했던 2대 디바이스 adb TC 실행. 전용 하네스가 있으면 짝지은 Android(adb)와 iOS(xcrun devicectl) 디바이스에서 스크립트로 통화 시나리오를 돌리고, logcat과 os_log 타임라인을 캡처하고, 통화 연결 지연과 벨 성공률을 계산할 수 있습니다. 그러면 에이전트가 지표가 목표에 닿을 때까지 커밋을 bisect하거나 후보 수정을 자율적으로 시도할 수 있습니다. 모든 통화 엔진 PR이 &apos;디바이스에서 검증 안 됨&apos;이 아니라 측정된 전후 수치를 갖고 올라오게 됩니다.</div>
+          <div class="horizon-tip"><strong>시작하기:</strong> adb, uiautomator dump, xcrun devicectl을 작은 scripts/device-harness CLI로 감싸세요. Claude가 그 JSON 지표 출력을 기준으로 반복하게 하고, 하네스가 통과를 보고할 때까지 완료를 막는 Stop hook을 쓰세요. macOS에는 `timeout`이 없으니 gtimeout이나 Python timeout을 쓰세요.</div>
+          <div class="pattern-prompt"><div class="prompt-label">Claude Code에 붙여넣기:</div><code>통화 엔진용 디바이스 회귀 하네스를 만든 뒤 사용하세요. 1단계: 다음을 수행하는 Python CLI로 scripts/device-harness/를 만드세요. (a) adb로 연결된 Android 디바이스와 `xcrun devicectl`로 iOS 디바이스를 감지합니다. (b) adb input/uiautomator로, 필요하면 URL scheme이나 XCUITest로 UI를 조작해 이름 붙은 시나리오(outgoing_call, incoming_call, redial_after_hangup, call_while_backgrounded)를 실행합니다. (c) 각 통화 전후의 logcat/os_log를 캡처해 발신, 벨, 연결 타임스탬프를 추출합니다. (d) 시나리오별 지연 시간과 pass/fail을 JSON으로 출력하고, 사람이 디바이스를 만지면(예상치 못한 포그라운드 액티비티 변경 감지) 깔끔하게 중단합니다. `timeout` 명령이 아니라 Python subprocess timeout을 쓰세요. 2단계: 현재 develop 빌드에서 모든 시나리오를 5회씩 실행해 기준선을 기록하세요. 3단계: 이 브랜치에서 다시 실행해 비교하세요. 어떤 시나리오가 회귀하거나 벨 성공률이 100% 미만이면 로그에서 원인을 찾고, 유닛 테스트와 함께 수정을 제안하고, 다시 빌드·설치·실행하기를 최대 5회 반복하세요. 전후 비교표와 근본 원인에 대한 로그 증거를 보고하세요. 반복되는 워크플로우이므로 하네스 사용법을 CLAUDE.md에 추가하세요.</code><button class="copy-btn" onclick="copyText(this)">복사</button></div>
+        </div>
+      
+    </div>
+
+
+    <div class="fun-ending">
+      <div class="fun-headline">TL;DR — 리뷰 루프를 끝까지 맡기는 위임형 운영. 증거를 요구할 때 가장 강했고, 확인하지 않은 전제와 상한 없는 루프가 가장 큰 비용이었습니다.</div>
+      <div class="fun-detail">69개 세션·998개 메시지·227개 커밋 동안 작업의 중심은 코멘트 0건까지 돌리는 리뷰-수정 루프였고, PR #9(22라운드)와 #163(12라운드)이 그렇게 나왔습니다. 디바이스 로그로 iPhone 발신 지연을 7–34초에서 0.5–1.8초로 줄였고, mutation testing으로 실제로 약한 테스트 비율(약 1%)을 측정했습니다. 반면 buggy_code·wrong_approach가 각 27건으로, 검증하지 않은 전제, 루프 안에서 스스로 만든 회귀, 병렬 세션 간 git 충돌이 반복됐습니다. 다음 달에 할 일은 세 가지입니다: push 전 커밋 확인 hook, 라운드 상한과 결정 로그를 갖춘 리뷰 루프, 하드웨어·소비자 전제를 요청에 먼저 적기.</div>
+    </div>
+
+
+  </div>
+  <script>
+    function toggleCollapsible(header) {
+      header.classList.toggle('open');
+      const content = header.nextElementSibling;
+      content.classList.toggle('open');
+    }
+    function copyText(btn) {
+      const code = btn.previousElementSibling;
+      navigator.clipboard.writeText(code.textContent).then(() => {
+        btn.textContent = '복사됨!';
+        setTimeout(() => { btn.textContent = '복사'; }, 2000);
+      });
+    }
+    function copyCmdItem(idx) {
+      const checkbox = document.getElementById('cmd-' + idx);
+      if (checkbox) {
+        const text = checkbox.dataset.text;
+        navigator.clipboard.writeText(text).then(() => {
+          const btn = checkbox.nextElementSibling.querySelector('.copy-btn');
+          if (btn) { btn.textContent = '복사됨!'; setTimeout(() => { btn.textContent = '복사'; }, 2000); }
+        });
+      }
+    }
+    function copyAllCheckedClaudeMd() {
+      const checkboxes = document.querySelectorAll('.cmd-checkbox:checked');
+      const texts = [];
+      checkboxes.forEach(cb => {
+        if (cb.dataset.text) { texts.push(cb.dataset.text); }
+      });
+      const combined = texts.join('\n');
+      const btn = document.querySelector('.copy-all-btn');
+      if (btn) {
+        navigator.clipboard.writeText(combined).then(() => {
+          btn.textContent = texts.length + '개 복사됨!';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = '선택 항목 전체 복사'; btn.classList.remove('copied'); }, 2000);
+        });
+      }
+    }
+    // Timezone selector for time of day chart (data is from our own analytics, not user input)
+    const rawHourCounts = {"0":5,"1":4,"2":5,"3":4,"4":4,"5":4,"6":4,"7":4,"8":28,"9":132,"10":89,"11":112,"12":49,"13":93,"14":125,"15":110,"16":92,"17":53,"18":8,"19":21,"20":22,"21":5,"22":11,"23":14};
+    function updateHourHistogram(offsetFromPT) {
+      const periods = [
+        { label: "오전 (6-12)", range: [6,7,8,9,10,11] },
+        { label: "오후 (12-18)", range: [12,13,14,15,16,17] },
+        { label: "저녁 (18-24)", range: [18,19,20,21,22,23] },
+        { label: "심야 (0-6)", range: [0,1,2,3,4,5] }
+      ];
+      const adjustedCounts = {};
+      for (const [hour, count] of Object.entries(rawHourCounts)) {
+        const newHour = (parseInt(hour) + offsetFromPT + 24) % 24;
+        adjustedCounts[newHour] = (adjustedCounts[newHour] || 0) + count;
+      }
+      const periodCounts = periods.map(p => ({
+        label: p.label,
+        count: p.range.reduce((sum, h) => sum + (adjustedCounts[h] || 0), 0)
+      }));
+      const maxCount = Math.max(...periodCounts.map(p => p.count)) || 1;
+      const container = document.getElementById('hour-histogram');
+      container.textContent = '';
+      periodCounts.forEach(p => {
+        const row = document.createElement('div');
+        row.className = 'bar-row';
+        const label = document.createElement('div');
+        label.className = 'bar-label';
+        label.textContent = p.label;
+        const track = document.createElement('div');
+        track.className = 'bar-track';
+        const fill = document.createElement('div');
+        fill.className = 'bar-fill';
+        fill.style.width = (p.count / maxCount) * 100 + '%';
+        fill.style.background = '#8b5cf6';
+        track.appendChild(fill);
+        const value = document.createElement('div');
+        value.className = 'bar-value';
+        value.textContent = p.count;
+        row.appendChild(label);
+        row.appendChild(track);
+        row.appendChild(value);
+        container.appendChild(row);
+      });
+    }
+    document.getElementById('timezone-select').addEventListener('change', function() {
+      const customInput = document.getElementById('custom-offset');
+      if (this.value === 'custom') {
+        customInput.style.display = 'inline-block';
+        customInput.focus();
+      } else {
+        customInput.style.display = 'none';
+        updateHourHistogram(parseInt(this.value));
+      }
+    });
+    document.getElementById('custom-offset').addEventListener('change', function() {
+      const parsed = parseInt(this.value, 10);
+      if (isNaN(parsed)) return;
+      updateHourHistogram(parsed + 8);
+    });
+  </script>
+</body>
+</html>
