@@ -13,6 +13,7 @@ Claude Code의 `/insights` 사용 분석 리포트를 한국어로 번역해 보
 
 | 데이터 기간 | 소스 |
 |---|---|
+| [2026-10-12 ~ 2026-11-10](https://choiseungmyung.github.io/claude-insights/html/20261012-20261110.html) | [html](html/20261012-20261110.html) |
 | [2026-09-11 ~ 2026-10-10](https://choiseungmyung.github.io/claude-insights/html/20260911-20261010.html) | [html](html/20260911-20261010.html) |
 | [2026-08-05 ~ 2026-09-08](https://choiseungmyung.github.io/claude-insights/html/20260805-20260908.html) | [html](html/20260805-20260908.html) |
 | [2026-07-06 ~ 2026-08-03](https://choiseungmyung.github.io/claude-insights/html/20260706-20260803.html) | [html](html/20260706-20260803.html) |
